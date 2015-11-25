@@ -18,11 +18,11 @@ public class TaskManager {
 		this.plugin = plugin;
 	}
 
-	public int repeat( Runnable r, int interval){
+	public int repeat(Runnable r, int interval){
 		return plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, r, interval, interval);
 	}
 
-	public void task( Runnable r){
+	public void task(Runnable r){
 		if(r == null)return;
 		plugin.getServer().getScheduler().runTask(plugin, r).getTaskId();
 	}

@@ -9,7 +9,7 @@ import org.bukkit.Material;
 public class AsyncBlockPlacer {
 
 	@SuppressWarnings("deprecation")
-	public static void setBlockAsync( Location loc, Material m){
+	public static void setBlockAsync(Location loc, Material m){
 		Queue.getInstance().setBlock(loc.getWorld().getName(), loc.getBlockX(), loc.getBlockY(), loc.getBlockZ(), (short)m.getId());
 	}
 
@@ -46,7 +46,7 @@ public class AsyncBlockPlacer {
 		AsyncChunk.getInstance().fixLighting(AsyncChunk.getInstance().getChunk(loc), fixAll);
 	}
 
-	public static void addTask( Runnable whenDone){
+	public static void addTask(Runnable whenDone){
 		Queue.getInstance().addTask(whenDone);
 	}
 }

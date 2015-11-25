@@ -81,7 +81,7 @@ public class AsyncChunk implements Listener {
 	}
 
 	@SuppressWarnings("deprecation")
-	public Collection<AsyncBlock> sendChunk( Collection<AsyncBlock> fcs){
+	public Collection<AsyncBlock> sendChunk(Collection<AsyncBlock> fcs){
 		HashMap<AsyncBlock, Object> packets = new HashMap<AsyncBlock, Object>();
 		HashMap<String, ArrayList<AsyncBlock>> map = new HashMap<String, ArrayList<AsyncBlock>>();
 
@@ -319,7 +319,7 @@ public class AsyncChunk implements Listener {
 		return false;
 	}
 
-	private Object newChunkSection( int i, boolean flag, char[] ids){
+	private Object newChunkSection(int i, boolean flag, char[] ids){
 		try{
 			return chunkSectionConstructor.newInstance(i, flag, ids);
 		}catch(InstantiationException e){
@@ -334,7 +334,7 @@ public class AsyncChunk implements Listener {
 		return null;
 	}
 
-	private char[] getIdArray( Object obj){
+	private char[] getIdArray(Object obj){
 		try{
 			return (char[]) getIdArray.invoke(obj);
 		}catch(IllegalAccessException e){
@@ -347,7 +347,7 @@ public class AsyncChunk implements Listener {
 		return null;
 	}
 
-	public AsyncBlock getChunk( ChunkLocation wrap){
+	public AsyncBlock getChunk(ChunkLocation wrap){
 		return new AsyncBlock(wrap);
 	}
 
@@ -373,7 +373,7 @@ public class AsyncChunk implements Listener {
 
 	private ConcurrentHashMap<ChunkLocation, AsyncBlock> blocks = new ConcurrentHashMap<ChunkLocation, AsyncBlock>();
 
-	public boolean setBlock( String world, int x, int y, int z, short id, byte data){
+	public boolean setBlock(String world, int x, int y, int z, short id, byte data){
 		if((y > 255)||(y < 0))return false;
 		ChunkLocation wrap = new ChunkLocation(world, x >> 4, z >> 4);
 		x = x & 15;

@@ -19,7 +19,7 @@ public class AsyncBlock {
 	private ChunkLocation location;
 	private Chunk chunk;
 
-	protected AsyncBlock( ChunkLocation chunk){
+	protected AsyncBlock(ChunkLocation chunk){
 		this.location = chunk;
 		ids = new char[16][];
 		count = new short[16];
@@ -35,11 +35,11 @@ public class AsyncBlock {
 		return chunk;
 	}
 
-	public int getCount( int i){
+	public int getCount(int i){
 		return count[i];
 	}
 
-	public int getAir( int i){
+	public int getAir(int i){
 		return air[i];
 	}
 
@@ -47,7 +47,7 @@ public class AsyncBlock {
 		count[i] = value;
 	}
 
-	public int getRelight( int i){
+	public int getRelight(int i){
 		return relight[i];
 	}
 
@@ -72,7 +72,7 @@ public class AsyncBlock {
 		return total;
 	}
 
-	public char[] getIdArray( int i){
+	public char[] getIdArray(int i){
 		return ids[i];
 	}
 
@@ -85,7 +85,7 @@ public class AsyncBlock {
 		return biomes;
 	}
 
-	public void setBlock( int x, int y, int z, int id, byte data){
+	public void setBlock(int x, int y, int z, int id, byte data){
 		int i = Cache.CACHE_I[y][x][z];
 		int j = Cache.CACHE_J[y][x][z];
 		char[] vs = ids[i];
@@ -192,7 +192,7 @@ public class AsyncBlock {
 		}
 	}
 
-	public void setChunkLoc( ChunkLocation loc){
+	public void setChunkLoc(ChunkLocation loc){
 		this.location = loc;
 		this.chunk = null;
 	}
@@ -202,9 +202,7 @@ public class AsyncBlock {
 	}
 
 	public void addToQueue(){
-		if(location == null){
-			throw new IllegalArgumentException("Chunk location is null");
-		}
+		if(location == null)throw new IllegalArgumentException("Chunk location is null");
 		AsyncChunk.getInstance().setChunk(this);
 	}
 

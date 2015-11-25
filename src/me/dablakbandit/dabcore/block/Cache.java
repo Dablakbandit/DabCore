@@ -17,11 +17,11 @@ public class Cache{
 	public static PseudoRandom RANDOM = new PseudoRandom();
 
 	static{
-		for (int x = 0; x < 16; x++){
-			for (int z = 0; z < 16; z++){
-				for (int y = 0; y < 256; y++){
-					short i = (short) (y >> 4);
-					short j = (short) (((y & 0xF) << 8) | (z << 4) | x);
+		for(int x = 0; x < 16; x++){
+			for(int z = 0; z < 16; z++){
+				for(int y = 0; y < 256; y++){
+					short i = (short)(y >> 4);
+					short j = (short)(((y & 0xF) << 8) | (z << 4) | x);
 					CACHE_I[y][x][z] = i;
 					CACHE_J[y][x][z] = j;
 					CACHE_X[i][j] = (byte) x;

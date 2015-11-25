@@ -38,68 +38,44 @@ public class Queue {
 		}, 1);
 	}
 
-	public boolean isWaiting() {
+	public boolean isWaiting(){
 		return time_waiting.get() >= time_current.get();
 	}
 
-	public boolean isDone() {
+	public boolean isDone(){
 		return (time_waiting.get() + 1) < time_current.get();
 	}
 
-	private void setWaiting() {
+	private void setWaiting(){
 		time_waiting.set(time_current.get() + 1);
 	}
 
-	public boolean addTask( Runnable whenDone) {
-		if (isDone()) {
-			// Run
+	public boolean addTask(Runnable whenDone){
+		if(isDone()){
 			tasks();
-			if (whenDone != null) {
-				whenDone.run();
-			}
+			if(whenDone != null)whenDone.run();
 			return true;
 		}
-		if (whenDone != null) {
-			runnables.add(whenDone);
-		}
+		if(whenDone!=null)runnables.add(whenDone);
 		return false;
 	}
 
-	private boolean tasks() {
-		if (runnables.size() == 0) {
-			return false;
-		}
+	private boolean tasks(){
+		if(runnables.size() == 0)return false;
 		ArrayDeque<Runnable> tmp = runnables.clone();
 		runnables.clear();
-		for ( Runnable runnable : tmp) {
+		for(Runnable runnable : tmp){
 			runnable.run();
 		}
 		return true;
 	}
 
-	/**
-	 * @param world
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param id
-	 * @param data
-	 * @return
-	 */
-	public boolean setBlock( String world, int x, int y, int z, short id, byte data) {
+	public boolean setBlock(String world, int x, int y, int z, short id, byte data) {
 		setWaiting();
 		return AsyncChunk.getInstance().setBlock(world, x, y, z, id, data);
 	}
-
-	/**
-	 * @param world
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param id
-	 * @return
-	 */
-	public boolean setBlock( String world, int x, int y, int z, short id) {
+	
+	public boolean setBlock(String world, int x, int y, int z, short id) {
 		setWaiting();
 		return AsyncChunk.getInstance().setBlock(world, x, y, z, id, (byte) 0);
 	}
