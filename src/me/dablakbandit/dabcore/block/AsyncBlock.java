@@ -53,9 +53,7 @@ public class AsyncBlock {
 
 	public int getTotalCount(){
 		int total = 0;
-		for(int i = 0; i < 16; i++){
-			total += count[i];
-		}
+		for(int i = 0; i < 16; i++)total += count[i];
 		return total;
 	}
 
@@ -66,9 +64,7 @@ public class AsyncBlock {
 			return Short.MAX_VALUE;
 		}
 		int total = 0;
-		for(int i = 0; i < 16; i++){
-			total += relight[i];
-		}
+		for(int i = 0; i < 16; i++)total += relight[i];
 		return total;
 	}
 
@@ -86,8 +82,8 @@ public class AsyncBlock {
 	}
 
 	public void setBlock(int x, int y, int z, int id, byte data){
-		int i = Cache.CACHE_I[y][x][z];
-		int j = Cache.CACHE_J[y][x][z];
+		int i = y>>4;
+		int j = (((y & 0xF) << 8) | (z << 4) | x);
 		char[] vs = ids[i];
 		if (vs == null) {
 			vs = ids[i] = new char[4096];
@@ -183,9 +179,7 @@ public class AsyncBlock {
 		case 61:
 		case 65:
 		case 68:
-			if (data < 2) {
-				data = 2;
-			}
+			if(data < 2)data = 2;
 		default:
 			vs[j] = (char) ((id << 4) + data);
 			return;
@@ -199,14 +193,5 @@ public class AsyncBlock {
 
 	public ChunkLocation getChunkLoc(){
 		return this.location;
-	}
-
-	public void addToQueue(){
-		if(location == null)throw new IllegalArgumentException("Chunk location is null");
-		AsyncChunk.getInstance().setChunk(this);
-	}
-
-	public void fixLighting(){
-		AsyncChunk.getInstance().fixLighting(this, true);
 	}
 }
