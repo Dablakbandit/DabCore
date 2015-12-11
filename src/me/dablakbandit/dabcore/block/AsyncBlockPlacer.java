@@ -9,10 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import me.dablakbandit.dabcore.DabCorePlugin;
 import me.dablakbandit.dabcore.utils.ChunkLocation;
 import me.dablakbandit.dabcore.utils.NMSUtils;
 import me.dablakbandit.dabcore.utils.PseudoRandom;
@@ -32,42 +29,7 @@ public class AsyncBlockPlacer {
 		return blockplacer;
 	}
 	
-	public static PseudoRandom RANDOM = new PseudoRandom();
-	
-	//TIMER
-	private long last;
-	private long last2;
-	private AtomicInteger time_waiting = new AtomicInteger(2);
-	private AtomicInteger time_current = new AtomicInteger(0);
-	
-	private AsyncBlockPlacer(){
-		Bukkit.getScheduler().scheduleSyncRepeatingTask(DabCorePlugin.getInstance(), new Runnable(){
-			@Override
-			public void run(){
-				long free = 50 + Math.min(50 + last - (last = System.currentTimeMillis()), last2 - System.currentTimeMillis());
-				time_current.incrementAndGet();
-				do{
-					if(isWaiting())return;
-					AsyncBlock current = next();
-					if(current == null){
-						time_waiting.set(Math.max(time_waiting.get(), time_current.get() - 2));
-						return;
-					}
-				}while((last2 = System.currentTimeMillis()) - last < free);
-				time_waiting.set(time_current.get() - 1);
-			}
-		}, 1, 1);
-	}
-
-	private void setWaiting(){
-		time_waiting.set(time_current.get() + 1);
-	}
-	
-	public boolean isWaiting(){
-		return time_waiting.get() >= time_current.get();
-	}
-	//END
-	
+	public static PseudoRandom RANDOM = new PseudoRandom();	
 	
 	//BLOCK/CHUNK
 	private Class<?> entityPlayer = NMSUtils.getNMSClass("EntityPlayer");
@@ -103,45 +65,20 @@ public class AsyncBlockPlacer {
 	//END
 		
 	
-	//BLOCK PLACER
-	private ConcurrentHashMap<ChunkLocation, AsyncBlock> blocks = new ConcurrentHashMap<ChunkLocation, AsyncBlock>();
-	
+	//BLOCK PLACER	
 	public boolean setBlock(String world, int x, int y, int z, short id, byte data){
-		setWaiting();
 		if((y > 255)||(y < 0))return false;
 		ChunkLocation wrap = new ChunkLocation(world, x >> 4, z >> 4);
 		x = x & 15;
 		z = z & 15;
-		AsyncBlock result = blocks.get(wrap);
-		if(result == null){
-			result = getChunk(wrap);
-			result.setBlock(x, y, z, id, data);
-			AsyncBlock previous = blocks.put(wrap, result);
-			if(previous == null)return true;
-			blocks.put(wrap, previous);
-			result = previous;
-		}
+		AsyncBlock result = getChunk(wrap);
 		result.setBlock(x, y, z, id, data);
+		execute(result);
 		return true;
 	}
 	
 	private AsyncBlock getChunk(ChunkLocation wrap){
 		return new AsyncBlock(wrap);
-	}
-	
-	private AsyncBlock next(){
-		try{
-			if(blocks.size() == 0)return null;
-			Iterator<Entry<ChunkLocation, AsyncBlock>> iter = blocks.entrySet().iterator();
-			AsyncBlock toReturn = iter.next().getValue();
-			if(isWaiting())return null;
-			iter.remove();
-			execute(toReturn);
-			return toReturn;
-		}catch(Throwable e){
-			e.printStackTrace();
-			return null;
-		}
 	}
 	
 	private boolean execute(AsyncBlock fc){
@@ -351,4 +288,18 @@ public class AsyncBlockPlacer {
 		return null;
 	}
 	//END
+	
+	class BlockRunnable implements Runnable{
+		
+		private AsyncBlock block;
+		
+		BlockRunnable(AsyncBlock block){
+			this.block = block;
+		}
+
+		@Override
+		public void run() {
+			execute(block);
+		}
+	}
 }

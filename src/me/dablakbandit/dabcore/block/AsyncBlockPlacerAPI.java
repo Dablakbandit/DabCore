@@ -1,5 +1,6 @@
 package me.dablakbandit.dabcore.block;
 
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
@@ -21,6 +22,10 @@ public class AsyncBlockPlacerAPI {
 	
 	public static void setBlock(String world, int x, int y, int z, short id, byte data){
 		AsyncBlockPlacer.getInstance().setBlock(world, x, y, z, id, data);
+	}
+	
+	public static void updateChunk(Chunk chunk){
+		AsyncBlockPlacer.getInstance().updateChunk(chunk);
 	}
 	
 }
