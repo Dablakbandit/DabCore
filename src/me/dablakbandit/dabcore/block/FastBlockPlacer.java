@@ -21,11 +21,11 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
 
-public class AsyncBlockPlacer {
+public class FastBlockPlacer {
 	
-	private static AsyncBlockPlacer blockplacer = new AsyncBlockPlacer();
+	private static FastBlockPlacer blockplacer = new FastBlockPlacer();
 	
-	public static AsyncBlockPlacer getInstance(){
+	public static FastBlockPlacer getInstance(){
 		return blockplacer;
 	}
 	
@@ -71,17 +71,17 @@ public class AsyncBlockPlacer {
 		ChunkLocation wrap = new ChunkLocation(world, x >> 4, z >> 4);
 		x = x & 15;
 		z = z & 15;
-		AsyncBlock result = getChunk(wrap);
+		FastBlock result = getChunk(wrap);
 		result.setBlock(x, y, z, id, data);
 		execute(result);
 		return true;
 	}
 	
-	private AsyncBlock getChunk(ChunkLocation wrap){
-		return new AsyncBlock(wrap);
+	private FastBlock getChunk(ChunkLocation wrap){
+		return new FastBlock(wrap);
 	}
 	
-	private boolean execute(AsyncBlock fc){
+	private boolean execute(FastBlock fc){
 		if(fc == null)return false;
 		Chunk chunk = fc.getChunk();
 		chunk.load(true);
@@ -90,9 +90,9 @@ public class AsyncBlockPlacer {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private boolean setComponents(AsyncBlock fc){
+	private boolean setComponents(FastBlock fc){
 		try{
-			AsyncBlock fs = (AsyncBlock) fc;
+			FastBlock fs = (FastBlock) fc;
 			Chunk chunk = fs.getChunk();
 			World world = chunk.getWorld();
 			boolean flag = world.getEnvironment() == Environment.NORMAL;
@@ -291,9 +291,9 @@ public class AsyncBlockPlacer {
 	
 	class BlockRunnable implements Runnable{
 		
-		private AsyncBlock block;
+		private FastBlock block;
 		
-		BlockRunnable(AsyncBlock block){
+		BlockRunnable(FastBlock block){
 			this.block = block;
 		}
 

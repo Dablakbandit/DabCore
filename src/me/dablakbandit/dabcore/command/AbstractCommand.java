@@ -51,20 +51,21 @@ public abstract class AbstractCommand implements CommandExecutor {
 		this.permMessage = permissionMessage;
 		this.alias = aliases;
 	}
+	
+	private static CommandMap commandMap = getCommandMap();
+	private static Field knownCommands = getKnownCommands();
 
+	@SuppressWarnings("unchecked")
 	public void register() {
 		ReflectCommand cmd = new ReflectCommand(this.command);
 		if (this.alias != null) cmd.setAliases(this.alias);
 		if (this.description != null) cmd.setDescription(this.description);
 		if (this.usage != null) cmd.setUsage(this.usage);
 		if (this.permMessage != null) cmd.setPermissionMessage(this.permMessage);
-		CommandMap commandMap = getCommandMap();
 		try{
-			Field f = NMSUtils.getField(commandMap.getClass(), "knownCommands");
-			@SuppressWarnings("unchecked")
-			Map<String, Command> commands = (Map<String, Command>) f.get(commandMap);
+			Map<String, Command> commands = (Map<String, Command>) knownCommands.get(commandMap);
 			commands.remove(this.command);
-			f.set(commandMap, commands);
+			knownCommands.set(commandMap, commands);
 		}catch(Exception e){
 			e.printStackTrace();
 			System.out.print(commandMap.getClass().getName());
@@ -72,17 +73,30 @@ public abstract class AbstractCommand implements CommandExecutor {
 		commandMap.register(this.command, "", cmd);
 		cmd.setExecutor(this);
 	}
+	
+	static Field getKnownCommands(){
+		try{
+			Class<?> clazz = commandMap.getClass();
+			if(clazz.getSimpleName().equals("FakeSimpleCommandMap"))clazz = clazz.getSuperclass();
+			return NMSUtils.getField(commandMap.getClass(), "knownCommands");
+		}catch(Exception e){
+			e.printStackTrace();
+			System.out.print(commandMap.getClass().getName());
+		}
+		return null;
+	}
 
-	final CommandMap getCommandMap() {
+	static CommandMap getCommandMap() {
 		if (cmap == null) {
 			try {
 				final Field f = Bukkit.getServer().getClass().getDeclaredField("commandMap");
 				f.setAccessible(true);
 				cmap = (CommandMap) f.get(Bukkit.getServer());
-				return getCommandMap();
 			} catch (Exception e) { e.printStackTrace(); }
-		} else if (cmap != null) { return cmap; }
-		return getCommandMap();
+			return cmap;
+		} else {
+			return cmap; 
+		}
 	}
 
 	private final class ReflectCommand extends Command {

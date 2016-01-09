@@ -4,7 +4,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
-public class AsyncBlockPlacerAPI {
+public class FastBlockPlacerAPI {
 
 	@SuppressWarnings("deprecation")
 	public static void setBlockAsync(Location loc, Material m){
@@ -21,11 +21,11 @@ public class AsyncBlockPlacerAPI {
 	}
 	
 	public static void setBlock(String world, int x, int y, int z, short id, byte data){
-		AsyncBlockPlacer.getInstance().setBlock(world, x, y, z, id, data);
+		FastBlockPlacer.getInstance().setBlock(world, x, y, z, id, data);
 	}
 	
 	public static void updateChunk(Chunk chunk){
-		AsyncBlockPlacer.getInstance().updateChunk(chunk);
+		FastBlockPlacer.getInstance().updateChunk(chunk);
 	}
 	
 }

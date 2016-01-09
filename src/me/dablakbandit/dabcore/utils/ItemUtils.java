@@ -112,7 +112,7 @@ public class ItemUtils {
 	}
 	
 	@SuppressWarnings("unused")
-	private static Class<?> nmrs = NMSUtils.getNMSClass("RegistrySimple"), nmrm = NMSUtils.getNMSClass("RegistryMaterials"), nmmk = NMSUtils.getNMSClass("MinecraftKey");
+	private static Class<?> nmrs = NMSUtils.getNMSClass("RegistrySimple"), nmrm = NMSUtils.getNMSClass("RegistryMaterials");
 	private static Field nmrsc = NMSUtils.getField(nmrs, "c");
 	
 	public static String getMinecraftName(ItemStack is){

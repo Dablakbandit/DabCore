@@ -39,7 +39,7 @@ public class NMSUtils{
 		try{
 			return getNMSClassWithException(className);
 		}catch(Exception e){
-			return getInnerClass(getNMSClass(embedded), className);
+			return getInnerClassSilent(getNMSClassSilent(embedded), className);
 		}
 	}
 
@@ -47,7 +47,7 @@ public class NMSUtils{
 		try{
 			return getNMSClassWithException(className);
 		}catch(Exception e){
-			return getInnerClassSilent(getNMSClass(embedded), className);
+			return getInnerClassSilent(getNMSClassSilent(embedded), className);
 		}
 	}
 

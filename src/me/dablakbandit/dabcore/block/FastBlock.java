@@ -7,7 +7,7 @@ import me.dablakbandit.dabcore.utils.ChunkLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 
-public class AsyncBlock {
+public class FastBlock {
 
 	private char[][] ids;
 
@@ -19,7 +19,7 @@ public class AsyncBlock {
 	private ChunkLocation location;
 	private Chunk chunk;
 
-	protected AsyncBlock(ChunkLocation chunk){
+	protected FastBlock(ChunkLocation chunk){
 		this.location = chunk;
 		ids = new char[16][];
 		count = new short[16];
