@@ -244,7 +244,11 @@ public class ItemUtils {
 	public static Constructor<?> nbttlc = NMSUtils.getConstructor(nbttl);
 
 	public static Object getList(Object tag) throws Exception{
-		return gl.invoke(tag, "AttributeModifiers", 10);
+		return gl.invoke(tag, "AttributeModifiers", 9);
+	}
+	
+	public static Object getList(Object tag, String name, int id) throws Exception{
+		return gl.invoke(tag, name, id);
 	}
 
 	public static boolean getUnbreakable(Object tag) throws Exception{
