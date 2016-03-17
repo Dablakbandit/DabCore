@@ -12,9 +12,30 @@ public class NMSUtils{
 	private static String version = getVersion();
 
 	public static String getVersion(){
-		if(version!=null)return version;
+		if(version != null)
+			return version;
 		String name = Bukkit.getServer().getClass().getPackage().getName();
 		return name.substring(name.lastIndexOf('.') + 1) + ".";
+	}
+
+	public static Class<?> getClassWithException(String name) throws Exception{
+		return Class.forName(name);
+	}
+
+	public static Class<?> getClass(String name){
+		try{
+			return getClassWithException(name);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static Class<?> getClassSilent(String name){
+		try{
+			return getClassWithException(name);
+		}catch(Exception e){}
+		return null;
 	}
 
 	public static Class<?> getNMSClassWithException(String className) throws Exception{
@@ -24,7 +45,9 @@ public class NMSUtils{
 	public static Class<?> getNMSClass(String className){
 		try{
 			return getNMSClassWithException(className);
-		}catch(Exception e){e.printStackTrace();}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 		return null;
 	}
 
@@ -154,7 +177,7 @@ public class NMSUtils{
 
 	public static Field getFieldOfTypeWithException(Class<?> clazz, Class<?> type, String name) throws Exception{
 		for(Field field : clazz.getDeclaredFields())
-			if(field.getName().equals(name)&&field.getType().equals(type)){
+			if(field.getName().equals(name) && field.getType().equals(type)){
 				field.setAccessible(true);
 				Field modifiersField = Field.class.getDeclaredField("modifiers");
 				modifiersField.setAccessible(true);
@@ -164,7 +187,7 @@ public class NMSUtils{
 				return field;
 			}
 		for(Field field : clazz.getFields())
-			if(field.getName().equals(name)&&field.getType().equals(type)){
+			if(field.getName().equals(name) && field.getType().equals(type)){
 				field.setAccessible(true);
 				Field modifiersField = Field.class.getDeclaredField("modifiers");
 				modifiersField.setAccessible(true);
@@ -214,9 +237,7 @@ public class NMSUtils{
 			if(f.getType().equals(type)){
 				field = f;
 			}
-		if(field==null){
-			throw new Exception("Field Not Found");
-		}
+		if(field == null){ throw new Exception("Field Not Found"); }
 		field.setAccessible(true);
 		Field modifiersField = Field.class.getDeclaredField("modifiers");
 		modifiersField.setAccessible(true);
@@ -235,14 +256,14 @@ public class NMSUtils{
 		return null;
 	}
 
-	public static Method getMethod(Class<?> clazz, String name,	Class<?>... args){
+	public static Method getMethod(Class<?> clazz, String name, Class<?>... args){
 		for(Method m : clazz.getDeclaredMethods())
-			if(m.getName().equals(name) &&(args.length == 0 && m.getParameterTypes().length == 0 || ClassListEqual(args, m.getParameterTypes()))){
+			if(m.getName().equals(name) && (args.length == 0 && m.getParameterTypes().length == 0 || ClassListEqual(args, m.getParameterTypes()))){
 				m.setAccessible(true);
 				return m;
 			}
 		for(Method m : clazz.getMethods())
-			if(m.getName().equals(name) &&(args.length == 0 && m.getParameterTypes().length == 0 || ClassListEqual(args, m.getParameterTypes()))){
+			if(m.getName().equals(name) && (args.length == 0 && m.getParameterTypes().length == 0 || ClassListEqual(args, m.getParameterTypes()))){
 				m.setAccessible(true);
 				return m;
 			}
@@ -257,15 +278,18 @@ public class NMSUtils{
 	}
 
 	public static boolean ClassListEqual(Class<?>[] l1, Class<?>[] l2){
-		if(l1.length != l2.length)return false;
+		if(l1.length != l2.length)
+			return false;
 		for(int i = 0; i < l1.length; i++)
-			if(l1[i] != l2[i])return false;
+			if(l1[i] != l2[i])
+				return false;
 		return true;
 	}
 
-	public static Class<?> getInnerClassWithException(Class<?> c, String  className) throws Exception{
+	public static Class<?> getInnerClassWithException(Class<?> c, String className) throws Exception{
 		for(Class<?> cl : c.getDeclaredClasses())
-			if(cl.getSimpleName().equals(className))return cl;
+			if(cl.getSimpleName().equals(className))
+				return cl;
 		return null;
 	}
 
