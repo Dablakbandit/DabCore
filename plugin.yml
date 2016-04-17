@@ -1,5 +1,5 @@
 name: DabCore
 main: me.dablakbandit.dabcore.DabCorePlugin
 author: Dablakbandit
-version: 1.0q
+version: 1.1
 softdepend: [Vault]

@@ -28,7 +28,7 @@ public final class NBTUtils{
 		}else if(clazz.equals(StringTag.class)){
 			return "TAG_String";
 		}else{
-			throw new IllegalArgumentException("[MapMaze] Invalid tag classs ("+ clazz.getName() + ").");
+			throw new IllegalArgumentException("[DabCore] Invalid tag classs ("+ clazz.getName() + ").");
 		}
 	}
 
@@ -58,7 +58,7 @@ public final class NBTUtils{
 		}else if(clazz.equals(StringTag.class)){
 			return NBTConstants.TYPE_STRING;
 		}else{
-			throw new IllegalArgumentException("[MapMaze] Invalid tag classs (" + clazz.getName() + ").");
+			throw new IllegalArgumentException("[DabCore] Invalid tag classs (" + clazz.getName() + ").");
 		}
 	}
 
@@ -89,7 +89,7 @@ public final class NBTUtils{
 		case NBTConstants.TYPE_INT_ARRAY:
 			return IntArrayTag.class;
 		default:
-			throw new IllegalArgumentException("[MapMaze] Invalid tag type : " + type + ".");
+			throw new IllegalArgumentException("[DabCore] Invalid tag type : " + type + ".");
 		}
 	}
 

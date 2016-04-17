@@ -51,7 +51,7 @@ public final class NBTInputStream implements Closeable {
 		switch (type){
 		case NBTConstants.TYPE_END:
 			if(depth == 0){
-				throw new IOException("[MapMaze] TAG_End found without a TAG_Compound/TAG_List tag preceding it.");
+				throw new IOException("[DabCore] TAG_End found without a TAG_Compound/TAG_List tag preceding it.");
 			}else {
 				return new EndTag();
 			}
@@ -83,7 +83,7 @@ public final class NBTInputStream implements Closeable {
 			final List<Tag> tagList = new ArrayList<Tag>();
 			for(int i = 0; i < length; i++){
 				final Tag tag = readTagPayload(childType, "", depth + 1);
-				if(tag instanceof EndTag){ throw new IOException("[MapMaze] TAG_End not permitted in a list."); }
+				if(tag instanceof EndTag){ throw new IOException("[DabCore] TAG_End not permitted in a list."); }
 				tagList.add(tag);
 			}
 			return new ListTag(name, NBTUtils.getTypeClass(childType), tagList);
@@ -106,7 +106,7 @@ public final class NBTInputStream implements Closeable {
 			}
 			return new IntArrayTag(name, ints);
 		default:
-			throw new IOException("[MapMaze] Invalid tag type: " + type + ".");
+			throw new IOException("[DabCore] Invalid tag type: " + type + ".");
 		}
 	}
 
