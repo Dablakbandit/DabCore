@@ -10,10 +10,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import me.dablakbandit.dabcore.utils.ChunkLocation;
-import me.dablakbandit.dabcore.utils.NMSUtils;
-import me.dablakbandit.dabcore.utils.PseudoRandom;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -21,7 +17,11 @@ import org.bukkit.World;
 import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
 
-public class FastBlockPlacer {
+import me.dablakbandit.dabcore.utils.ChunkLocation;
+import me.dablakbandit.dabcore.utils.NMSUtils;
+import me.dablakbandit.dabcore.utils.PseudoRandom;
+
+public class FastBlockPlacer{
 	
 	private static FastBlockPlacer blockplacer = new FastBlockPlacer();
 	
@@ -29,45 +29,45 @@ public class FastBlockPlacer {
 		return blockplacer;
 	}
 	
-	public static PseudoRandom RANDOM = new PseudoRandom();	
+	public static PseudoRandom	RANDOM						= new PseudoRandom();
 	
-	//BLOCK/CHUNK
-	private Class<?> entityPlayer = NMSUtils.getNMSClass("EntityPlayer");
-	private Class<?> mapChunk = NMSUtils.getNMSClass("PacketPlayOutMapChunk");
-	private Class<?> packet = NMSUtils.getNMSClass("Packet");
-	private Class<?> connection = NMSUtils.getNMSClass("PlayerConnection");
-	private Class<?> chunk = NMSUtils.getNMSClass("Chunk");
-	private Class<?> craftPlayer = NMSUtils.getOBCClass("entity.CraftPlayer");
-	private Class<?> craftChunk = NMSUtils.getOBCClass("CraftChunk");
-	private Class<?> world = NMSUtils.getNMSClass("World");
-	private Class<?> blockPosition = NMSUtils.getNMSClass("BlockPosition");
-	private Class<?> chunkSection = NMSUtils.getNMSClass("ChunkSection");
-
-	private Method getHandlePlayer = NMSUtils.getMethod(craftPlayer, "getHandle");
-	private Method getHandleChunk = NMSUtils.getMethod(craftChunk, "getHandle");
-	private Method X = NMSUtils.getMethod(world, "x", blockPosition);
-	private Method getIdArray = NMSUtils.getMethod(chunkSection, "getIdArray");
-	private Method sendPacket = NMSUtils.getMethod(connection, "sendPacket", packet);
-	private Method initLighting = NMSUtils.getMethod(chunk, "initLighting");
-	private Method getX = NMSUtils.getMethod(blockPosition, "getX");
-	private Method getY = NMSUtils.getMethod(blockPosition, "getY");
-	private Method getZ = NMSUtils.getMethod(blockPosition, "getZ");
-
-	private Constructor<?> MapChunk = NMSUtils.getConstructor(mapChunk, chunk, boolean.class, int.class);
-	private Constructor<?> blockPositionConstructor = NMSUtils.getConstructor(blockPosition, int.class, int.class, int.class);
-	private Constructor<?> chunkSectionConstructor = NMSUtils.getConstructor(chunkSection, int.class, boolean.class, char[].class);
-
-	private Field playerConnection = NMSUtils.getField(entityPlayer, "playerConnection");
-	private Field fsections = NMSUtils.getField(chunk, "sections");
-	private Field fworld = NMSUtils.getField(chunk, "world");
-	private Field ftileEntities = NMSUtils.getField(chunk, "tileEntities");
-	private Field fentitySlices = NMSUtils.getField(chunk, "entitySlices");
-	//END
-		
+	// BLOCK/CHUNK
+	private Class<?>			entityPlayer				= NMSUtils.getNMSClass("EntityPlayer");
+	private Class<?>			mapChunk					= NMSUtils.getNMSClass("PacketPlayOutMapChunk");
+	private Class<?>			packet						= NMSUtils.getNMSClass("Packet");
+	private Class<?>			connection					= NMSUtils.getNMSClass("PlayerConnection");
+	private Class<?>			chunk						= NMSUtils.getNMSClass("Chunk");
+	private Class<?>			craftPlayer					= NMSUtils.getOBCClass("entity.CraftPlayer");
+	private Class<?>			craftChunk					= NMSUtils.getOBCClass("CraftChunk");
+	private Class<?>			world						= NMSUtils.getNMSClass("World");
+	private Class<?>			blockPosition				= NMSUtils.getNMSClass("BlockPosition");
+	private Class<?>			chunkSection				= NMSUtils.getNMSClass("ChunkSection");
 	
-	//BLOCK PLACER	
+	private Method				getHandlePlayer				= NMSUtils.getMethodSilent(craftPlayer, "getHandle");
+	private Method				getHandleChunk				= NMSUtils.getMethodSilent(craftChunk, "getHandle");
+	private Method				X							= NMSUtils.getMethodSilent(world, "x", blockPosition);
+	private Method				getIdArray					= NMSUtils.getMethodSilent(chunkSection, "getIdArray");
+	private Method				sendPacket					= NMSUtils.getMethodSilent(connection, "sendPacket", packet);
+	private Method				initLighting				= NMSUtils.getMethodSilent(chunk, "initLighting");
+	private Method				getX						= NMSUtils.getMethodSilent(blockPosition, "getX");
+	private Method				getY						= NMSUtils.getMethodSilent(blockPosition, "getY");
+	private Method				getZ						= NMSUtils.getMethodSilent(blockPosition, "getZ");
+	
+	private Constructor<?>		MapChunk					= NMSUtils.getConstructorSilent(mapChunk, chunk, boolean.class, int.class);
+	private Constructor<?>		blockPositionConstructor	= NMSUtils.getConstructorSilent(blockPosition, int.class, int.class, int.class);
+	private Constructor<?>		chunkSectionConstructor		= NMSUtils.getConstructorSilent(chunkSection, int.class, boolean.class, char[].class);
+	
+	private Field				playerConnection			= NMSUtils.getField(entityPlayer, "playerConnection");
+	private Field				fsections					= NMSUtils.getField(chunk, "sections");
+	private Field				fworld						= NMSUtils.getField(chunk, "world");
+	private Field				ftileEntities				= NMSUtils.getField(chunk, "tileEntities");
+	private Field				fentitySlices				= NMSUtils.getField(chunk, "entitySlices");
+	// END
+	
+	// BLOCK PLACER
 	public boolean setBlock(String world, int x, int y, int z, short id, byte data){
-		if((y > 255)||(y < 0))return false;
+		if((y > 255) || (y < 0))
+			return false;
 		ChunkLocation wrap = new ChunkLocation(world, x >> 4, z >> 4);
 		x = x & 15;
 		z = z & 15;
@@ -82,47 +82,54 @@ public class FastBlockPlacer {
 	}
 	
 	private boolean execute(FastBlock fc){
-		if(fc == null)return false;
+		if(fc == null)
+			return false;
 		Chunk chunk = fc.getChunk();
 		chunk.load(true);
-		if(!setComponents(fc))return false;
+		if(!setComponents(fc))
+			return false;
 		return true;
 	}
 	
 	@SuppressWarnings("unchecked")
 	private boolean setComponents(FastBlock fc){
 		try{
-			FastBlock fs = (FastBlock) fc;
+			FastBlock fs = (FastBlock)fc;
 			Chunk chunk = fs.getChunk();
 			World world = chunk.getWorld();
 			boolean flag = world.getEnvironment() == Environment.NORMAL;
 			Object c = getHandleChunk.invoke(chunk);
-			Object[] sections = (Object[]) fsections.get(c);
-			HashMap<?, ?> tiles = (HashMap<?, ?>) ftileEntities.get(c);
-			List<?>[] entities = (List<?>[]) fentitySlices.get(c);
+			Object[] sections = (Object[])fsections.get(c);
+			HashMap<?, ?> tiles = (HashMap<?, ?>)ftileEntities.get(c);
+			List<?>[] entities = (List<?>[])fentitySlices.get(c);
 			Set<Entry<?, ?>> entryset = (Set<Entry<?, ?>>)(Set<?>)tiles.entrySet();
 			Iterator<Entry<?, ?>> iter = entryset.iterator();
 			while(iter.hasNext()){
 				Entry<?, ?> tile = iter.next();
 				Object pos = tile.getKey();
-				int lx = (int) getX.invoke(pos) & 15;
-				int ly = (int) getY.invoke(pos);
-				int lz = (int) getZ.invoke(pos) & 15;
-				int j = ly>>4;
+				int lx = (int)getX.invoke(pos) & 15;
+				int ly = (int)getY.invoke(pos);
+				int lz = (int)getZ.invoke(pos) & 15;
+				int j = ly >> 4;
 				int k = (((ly & 0xF) << 8) | (lz << 4) | lx);
 				char[] array = fs.getIdArray(j);
-				if(array == null)continue;
-				if(array[k] != 0)iter.remove();
+				if(array == null)
+					continue;
+				if(array[k] != 0)
+					iter.remove();
 			}
 			for(int i = 0; i < 16; i++){
-				if((entities[i] != null)&&(fs.getCount(i) >= 4096))entities[i].clear();
+				if((entities[i] != null) && (fs.getCount(i) >= 4096))
+					entities[i].clear();
 			}
 			for(int j = 0; j < sections.length; j++){
-				if(fs.getCount(j) == 0)continue;
+				if(fs.getCount(j) == 0)
+					continue;
 				char[] newArray = fs.getIdArray(j);
-				if(newArray == null)continue;
+				if(newArray == null)
+					continue;
 				Object section = sections[j];
-				if((section == null)||(fs.getCount(j) >= 4096)){
+				if((section == null) || (fs.getCount(j) >= 4096)){
 					section = sections[j] = newChunkSection(j << 4, flag, newArray);
 					continue;
 				}
@@ -147,7 +154,8 @@ public class FastBlockPlacer {
 						continue;
 					}
 				}
-				if(fill)fs.setCount(j, Short.MAX_VALUE);
+				if(fill)
+					fs.setCount(j, Short.MAX_VALUE);
 			}
 			fs.clear();
 			return true;
@@ -171,17 +179,16 @@ public class FastBlockPlacer {
 		}
 		return null;
 	}
-	//END
+	// END
 	
-	
-	//UPDATE CHUNK	
+	// UPDATE CHUNK
 	@SuppressWarnings("deprecation")
 	public void updateChunk(Chunk chunk){
-		int view = Bukkit.getServer().getViewDistance()+2;
-		int amount = 0 ;
+		int view = Bukkit.getServer().getViewDistance() + 2;
+		int amount = 0;
 		try{
 			Object c = getHandleChunk.invoke(chunk);
-			Object packet  = MapChunk.newInstance(c, true, 65535);
+			Object packet = MapChunk.newInstance(c, true, 65535);
 			for(Player player : Bukkit.getOnlinePlayers()){
 				String world = player.getWorld().getName();
 				if(world.equals(chunk.getWorld().getName())){
@@ -191,7 +198,8 @@ public class FastBlockPlacer {
 					Object entity = getHandlePlayer.invoke(player);
 					int dx = Math.abs(cx - chunk.getX());
 					int dz = Math.abs(cz - chunk.getZ());
-					if((dx > view)||(dz > view))continue;
+					if((dx > view) || (dz > view))
+						continue;
 					amount++;
 					Object con = playerConnection.get(entity);
 					sendPacket.invoke(con, packet);
@@ -208,27 +216,26 @@ public class FastBlockPlacer {
 		}
 		chunk.unload(true, false);
 		fixLighting(chunk);
-		if(amount>0){
+		if(amount > 0){
 			chunk.load();
 			chunk.getWorld().refreshChunk(chunk.getX(), chunk.getZ());
 		}
 	}
-	//END
+	// END
 	
-	
-	//FIX CHUNK LIGHTING
+	// FIX CHUNK LIGHTING
 	public void fixLighting(Chunk chunk){
 		try{
 			Object c = getHandleChunk.invoke(chunk);
-
+			
 			initLighting.invoke(c);
-
+			
 			Object[] sections = (Object[])fsections.get(c);
 			Object w = fworld.get(c);
-
+			
 			int x1 = chunk.getX() << 4;
 			int x2 = chunk.getZ() << 4;
-
+			
 			for(int j = 0; j < sections.length; j++){
 				Object section = sections[j];
 				if(section == null){
@@ -238,7 +245,8 @@ public class FastBlockPlacer {
 				int l = RANDOM.random(2);
 				for(int k = 0; k < array.length; k++){
 					int i = array[k];
-					if(i < 16)continue;
+					if(i < 16)
+						continue;
 					int id = i >> 4;
 					switch(id){
 					default:
@@ -271,13 +279,12 @@ public class FastBlockPlacer {
 		}
 		return;
 	}
-	//END
+	// END
 	
-	
-	//CHUNK UPDATE/LIGHTING
+	// CHUNK UPDATE/LIGHTING
 	private char[] getIdArray(Object obj){
 		try{
-			return (char[]) getIdArray.invoke(obj);
+			return (char[])getIdArray.invoke(obj);
 		}catch(IllegalAccessException e){
 			e.printStackTrace();
 		}catch(IllegalArgumentException e){
@@ -287,7 +294,7 @@ public class FastBlockPlacer {
 		}
 		return null;
 	}
-	//END
+	// END
 	
 	class BlockRunnable implements Runnable{
 		
@@ -296,9 +303,9 @@ public class FastBlockPlacer {
 		BlockRunnable(FastBlock block){
 			this.block = block;
 		}
-
+		
 		@Override
-		public void run() {
+		public void run(){
 			execute(block);
 		}
 	}

@@ -8,6 +8,7 @@ import me.dablakbandit.dabcore.command.AbstractCommand;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public abstract class AdvancedCommand extends AbstractCommand{
 
@@ -33,32 +34,44 @@ public abstract class AdvancedCommand extends AbstractCommand{
 
 	public AdvancedCommand(String command, String usage, String description, String permissionMessage, List<String> aliases) {
 		super(command, usage, description, permissionMessage, aliases);
+		createArguments();
 		register();
 	}
 	
-	public Map<String, AdvancedCommandPart> map = new HashMap<String, AdvancedCommandPart>();
+	public Map<String, Argument> map = new HashMap<String, Argument>();
+
+	public boolean hasPermission(CommandSender s){
+		return true;
+	};
 	
-	public abstract boolean needsPermission();
-	public abstract String getPermission();
-	public abstract void loadParts();
-	public abstract boolean onCommandPart(CommandSender s, Command cmd, String Label, String[] args);
-	public abstract void sendPermissionMessage(CommandSender s);
-	public abstract void sendUnknownMessage(CommandSender s);
+	public abstract boolean onCommand(CommandSender s, Command cmd, String Label);
+	public abstract void sendNoPermissionMessage(CommandSender s, Command cmd, String[] args);
+	public abstract void sendUnknownMessage(CommandSender s, Command cmd, String[] args);
 	
 	@Override
-	public boolean onCommand(CommandSender s, Command cmd, String Label, String[] args){
+	public boolean onCommand(CommandSender s, Command cmd, String label, String[] args){
 		if(args.length==0){
-			if(needsPermission()&&!s.hasPermission(getPermission())){
-				sendPermissionMessage(s);
+			if(!hasPermission(s)){
+				sendNoPermissionMessage(s, cmd, args);
 				return false;
 			}
-			return onCommandPart(s, cmd, Label, args);
+			return onCommand(s, cmd, label, args);
 		}
-		AdvancedCommandPart acp = map.get(args[0]);
+		Argument acp = map.get(args[0]);
 		if(acp==null){
-			sendUnknownMessage(s);
+			sendUnknownMessage(s, cmd, args);
 			return false;
 		}
-		return acp.onCommandPart(s, cmd, Label, args);
+		return acp.onCommand(s, cmd, label, args);
+	}
+	
+	public abstract void createArguments();
+	
+	protected String getFullCommand(Command cmd, String[] args){
+		String command = cmd.getLabel();
+		if(args.length>0){
+			for(int i = 0; i < args.length; i++)command = command + " " + args[i];
+		}
+		return command;
 	}
 }

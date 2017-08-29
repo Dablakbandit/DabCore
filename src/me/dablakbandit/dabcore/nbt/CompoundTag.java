@@ -1,24 +1,58 @@
 package me.dablakbandit.dabcore.nbt;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public final class CompoundTag extends Tag{
-
-	private final Map<String, Tag> value;
-
-	public CompoundTag(final String name, final Map<String, Tag> value){
+	
+	public static final int			DEFAULT_INITIAL_CAPACITY	= 32;
+	
+	private final Map<String, Tag>	value;
+	
+	public CompoundTag(String name, Map<String, Tag> value){
 		super(name);
-		this.value = Collections.unmodifiableMap(value);
+		this.value = value;
 	}
-
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public CompoundTag(String name){
+		this(name, new HashMap());
+	}
+	
 	@Override
 	public Map<String, Tag> getValue(){
 		return value;
 	}
-
+	
+	public void addTag(Tag tag){
+		value.put(tag.getName(), tag);
+	}
+	
+	public Tag getTag(String key){
+		return value.get(key);
+	}
+	
+	@Override
+	public boolean equals(Object obj){
+		if(this == obj)
+			return true;
+		if(!(obj instanceof CompoundTag))
+			return false;
+		if(!super.equals(obj))
+			return false;
+		CompoundTag compoundTag = (CompoundTag)obj;
+		return Objects.equals(value, compoundTag.value);
+	}
+	
+	@Override
+	public int hashCode(){
+		return Objects.hash(super.hashCode(), value);
+	}
+	
 	@Override
 	public String toString(){
+		
 		final String name = getName();
 		String append = "";
 		if((name != null) && !name.equals("")){
@@ -32,25 +66,4 @@ public final class CompoundTag extends Tag{
 		bldr.append("}");
 		return bldr.toString();
 	}
-
-	@Override
-	public int hashCode(){
-		final int prime = 31;
-		int result = super.hashCode();
-		result = (prime * result) + ((value == null) ? 0 : value.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(final Object obj){
-		if(this == obj){ return true; }
-		if(!super.equals(obj)){ return false; }
-		if(!(obj instanceof CompoundTag)){ return false; }
-		final CompoundTag other = (CompoundTag)obj;
-		if (value == null){
-			if(other.value != null){ return false; }
-		}else if(!value.equals(other.value)){ return false; }
-		return true;
-	}
-
 }

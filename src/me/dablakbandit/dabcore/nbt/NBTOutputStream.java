@@ -6,138 +6,161 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.InflaterOutputStream;
 
 public final class NBTOutputStream implements Closeable{
-
 	private final DataOutputStream os;
-
-	public NBTOutputStream(final OutputStream os) throws IOException{
-		this.os = new DataOutputStream(new GZIPOutputStream(os));
+	
+	@Deprecated
+	public NBTOutputStream(OutputStream os) throws IOException{
+		this(os, NBTCompression.GZIP);
 	}
-
-	public NBTOutputStream(OutputStream os, final boolean gzipped) throws IOException{
-		if(gzipped){
-			os = new GZIPOutputStream(os);
+	
+	@Deprecated
+	public NBTOutputStream(OutputStream os, boolean gzipped) throws IOException{
+		this(os, gzipped ? NBTCompression.GZIP : NBTCompression.UNCOMPRESSED);
+	}
+	
+	public NBTOutputStream(OutputStream os, NBTCompression compression) throws IOException{
+		switch(compression){
+		case UNCOMPRESSED:
+			this.os = new DataOutputStream(os);
+			break;
+		case GZIP:
+			this.os = new DataOutputStream(new GZIPOutputStream(os));
+			break;
+		case ZLIB:
+			this.os = new DataOutputStream(new InflaterOutputStream(os));
+			break;
+		case FROM_BYTE:
+			throw new IllegalArgumentException(NBTCompression.FROM_BYTE.name() + " is only for reading.");
+		default:
+			throw new AssertionError("[JNBT] Unimplemented " + NBTCompression.class.getSimpleName() + ": " + compression);
 		}
-		this.os = new DataOutputStream(os);
 	}
-
-	public void writeTag(final Tag tag) throws IOException{
-		final int type = NBTUtils.getTypeCode(tag.getClass());
-		final String name = tag.getName();
-		final byte[] nameBytes = name.getBytes(NBTConstants.CHARSET);
-		os.writeByte(type);
+	
+	public void writeTag(Tag tag) throws IOException{
+		NBTTagType type = NBTTagType.fromTagClass(tag.getClass());
+		byte[] nameBytes = tag.getName().getBytes(NBTConstants.CHARSET);
+		
+		if(type == NBTTagType.TAG_END)
+			throw new IOException("[JNBT] Named TAG_End not permitted.");
+		
+		os.writeByte(type.getTypeByte());
 		os.writeShort(nameBytes.length);
 		os.write(nameBytes);
-		if(type == NBTConstants.TYPE_END){ throw new IOException("[MapMaze] Named TAG_End not permitted."); }
+		
 		writeTagPayload(tag);
 	}
-
-	private void writeTagPayload(final Tag tag) throws IOException{
-		final int type = NBTUtils.getTypeCode(tag.getClass());
-		switch (type){
-		case NBTConstants.TYPE_END:
+	
+	private void writeTagPayload(Tag tag) throws IOException{
+		NBTTagType type = NBTTagType.fromTagClass(tag.getClass());
+		switch(type){
+		case TAG_END:
+			writeEndTagPayload((EndTag)tag);
 			break;
-		case NBTConstants.TYPE_BYTE:
-			writeByteTagPayload((ByteTag) tag);
+		case TAG_BYTE:
+			writeByteTagPayload((ByteTag)tag);
 			break;
-		case NBTConstants.TYPE_SHORT:
-			writeShortTagPayload((ShortTag) tag);
+		case TAG_SHORT:
+			writeShortTagPayload((ShortTag)tag);
 			break;
-		case NBTConstants.TYPE_INT:
-			writeIntTagPayload((IntTag) tag);
+		case TAG_INT:
+			writeIntTagPayload((IntTag)tag);
 			break;
-		case NBTConstants.TYPE_LONG:
-			writeLongTagPayload((LongTag) tag);
+		case TAG_LONG:
+			writeLongTagPayload((LongTag)tag);
 			break;
-		case NBTConstants.TYPE_FLOAT:
-			writeFloatTagPayload((FloatTag) tag);
+		case TAG_FLOAT:
+			writeFloatTagPayload((FloatTag)tag);
 			break;
-		case NBTConstants.TYPE_DOUBLE:
-			writeDoubleTagPayload((DoubleTag) tag);
+		case TAG_DOUBLE:
+			writeDoubleTagPayload((DoubleTag)tag);
 			break;
-		case NBTConstants.TYPE_BYTE_ARRAY:
-			writeByteArrayTagPayload((ByteArrayTag) tag);
+		case TAG_BYTE_ARRAY:
+			writeByteArrayTagPayload((ByteArrayTag)tag);
 			break;
-		case NBTConstants.TYPE_STRING:
-			writeStringTagPayload((StringTag) tag);
+		case TAG_STRING:
+			writeStringTagPayload((StringTag)tag);
 			break;
-		case NBTConstants.TYPE_LIST:
-			writeListTagPayload((ListTag) tag);
+		case TAG_LIST:
+			writeListTagPayload((ListTag)tag);
 			break;
-		case NBTConstants.TYPE_COMPOUND:
-			writeCompoundTagPayload((CompoundTag) tag);
+		case TAG_COMPOUND:
+			writeCompoundTagPayload((CompoundTag)tag);
 			break;
-		case NBTConstants.TYPE_INT_ARRAY:
-			writeIntArrayTagPayload((IntArrayTag) tag);
+		case TAG_INT_ARRAY:
+			writeIntArrayTagPayload((IntArrayTag)tag);
 			break;
 		default:
-			throw new IOException("[MapMaze] Invalid tag type: " + type + ".");
+			throw new AssertionError("[JNBT] Unimplemented " + NBTTagType.class.getSimpleName() + ": " + type);
 		}
 	}
-
-	private void writeByteTagPayload(final ByteTag tag) throws IOException{
+	
+	private void writeByteTagPayload(ByteTag tag) throws IOException{
 		os.writeByte(tag.getValue());
 	}
-
-	private void writeByteArrayTagPayload(final ByteArrayTag tag) throws IOException{
-		final byte[] bytes = tag.getValue();
+	
+	private void writeByteArrayTagPayload(ByteArrayTag tag) throws IOException{
+		byte[] bytes = tag.getValue();
 		os.writeInt(bytes.length);
 		os.write(bytes);
 	}
-
-	private void writeCompoundTagPayload(final CompoundTag tag) throws IOException{
-		for(final Tag childTag : tag.getValue().values()){
+	
+	private void writeCompoundTagPayload(CompoundTag tag) throws IOException{
+		for(Tag childTag : tag.getValue().values())
 			writeTag(childTag);
-		}
-		os.writeByte((byte) 0);
+		
+		os.writeByte((byte)0); // end tag - better way?
 	}
-
-	private void writeListTagPayload(final ListTag tag) throws IOException{
-		final Class<? extends Tag> clazz = tag.getType();
-		final List<Tag> tags = tag.getValue();
-		final int size = tags.size();
-		os.writeByte(NBTUtils.getTypeCode(clazz));
-		os.writeInt(size);
-		for(int i = 0; i < size; i++){
-			writeTagPayload(tags.get(i));
-		}
+	
+	private void writeListTagPayload(ListTag tag) throws IOException{
+		NBTTagType tagType = tag.getType();
+		List<Tag> tags = tag.getValue();
+		int length = tags.size();
+		
+		os.writeByte(tagType.getTypeByte());
+		os.writeInt(length);
+		for(Tag t : tags)
+			writeTagPayload(t);
 	}
-
-	private void writeStringTagPayload(final StringTag tag) throws IOException{
-		final byte[] bytes = tag.getValue().getBytes(NBTConstants.CHARSET);
+	
+	private void writeStringTagPayload(StringTag tag) throws IOException{
+		byte[] bytes = tag.getValue().getBytes(NBTConstants.CHARSET);
 		os.writeShort(bytes.length);
 		os.write(bytes);
 	}
-
-	private void writeDoubleTagPayload(final DoubleTag tag) throws IOException{
+	
+	private void writeDoubleTagPayload(DoubleTag tag) throws IOException{
 		os.writeDouble(tag.getValue());
 	}
-
-	private void writeFloatTagPayload(final FloatTag tag) throws IOException{
+	
+	private void writeFloatTagPayload(FloatTag tag) throws IOException{
 		os.writeFloat(tag.getValue());
 	}
-
-	private void writeLongTagPayload(final LongTag tag) throws IOException{
+	
+	private void writeLongTagPayload(LongTag tag) throws IOException{
 		os.writeLong(tag.getValue());
 	}
-
-	private void writeIntTagPayload(final IntTag tag) throws IOException{
+	
+	private void writeIntTagPayload(IntTag tag) throws IOException{
 		os.writeInt(tag.getValue());
 	}
-
-	private void writeShortTagPayload(final ShortTag tag) throws IOException{
+	
+	private void writeShortTagPayload(ShortTag tag) throws IOException{
 		os.writeShort(tag.getValue());
 	}
-
-	private void writeIntArrayTagPayload(final IntArrayTag tag) throws IOException{
-		final int[] ints = tag.getValue();
+	
+	private void writeIntArrayTagPayload(IntArrayTag tag) throws IOException{
+		int[] ints = tag.getValue();
 		os.writeInt(ints.length);
-		for(int i = 0; i < ints.length; i++){
-			os.writeInt(ints[i]);
-		}
+		for(int i : ints)
+			os.writeInt(i);
 	}
-
+	
+	private void writeEndTagPayload(EndTag tag){
+	}
+	
 	@Override
 	public void close() throws IOException{
 		os.close();

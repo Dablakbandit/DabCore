@@ -5,32 +5,39 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import me.dablakbandit.dabcore.json.JSONArray;
-import me.dablakbandit.dabcore.json.JSONObject;
-import me.dablakbandit.dabcore.utils.ItemUtils;
-import me.dablakbandit.dabcore.utils.NMSUtils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
-public class JSONFormatter {
+import me.dablakbandit.dabcore.json.JSONArray;
+import me.dablakbandit.dabcore.json.JSONObject;
+import me.dablakbandit.dabcore.jsonformatter.click.ClickEvent;
+import me.dablakbandit.dabcore.jsonformatter.hover.HoverEvent;
+import me.dablakbandit.dabcore.utils.NMSUtils;
 
-	private JSONArray ja = new JSONArray();
-	private Builder builder = new Builder();
-	private String color = "";
-
-	public JSONFormatter(){}
-
+public class JSONFormatter{
+	
+	private JSONArray		ja		= new JSONArray();
+	private Builder			builder	= new Builder();
+	private String			color	= "";
+	private List<JSONArray>	all		= new ArrayList<JSONArray>();
+	private boolean			newline	= true;
+	
+	public JSONFormatter(){
+	}
+	
+	public JSONFormatter(boolean newline){
+		this.newline = newline;
+	}
+	
 	public JSONFormatter append(JSONFormatter json){
-		if(json.ja.length()==0)return this;
+		if(json.ja.length() == 0)
+			return this;
 		try{
+			if(newline && json.newline){
+				all.addAll(json.all);
+			}
 			for(int i = 0; i < json.ja.length(); i++){
 				add(json.ja.get(i));
 			}
@@ -39,28 +46,81 @@ public class JSONFormatter {
 		}
 		return this;
 	}
-
+	
+	public int getSize(){
+		if(newline){ return 1; }
+		return all.size() + 1;
+	}
+	
+	public JSONFormatter newLine(){
+		if(newline){
+			append("\n");
+		}else{
+			all.add(ja);
+			ja = new JSONArray();
+		}
+		resetAll();
+		return this;
+	}
+	
+	public JSONFormatter newLine(int amount){
+		for(int i = 0; i < amount; i++)
+			newLine();
+		return this;
+	}
+	
 	public void clear(){
 		ja = new JSONArray();
 		builder = new Builder();
 		color = "";
 	}
-
+	
+	public JSONFormatter resetAll(){
+		return resetColors().resetModifiers();
+	}
+	
 	public JSONFormatter resetColors(){
 		color = "";
+		return this;
+	}
+	
+	public JSONFormatter resetModifiers(){
 		builder = new Builder();
 		return this;
 	}
-
+	
 	public String toJSON(){
 		JSONObject jo = new JSONObject();
 		try{
-			if(ja.length()>0)jo.put("extra", ja);
+			if(ja.length() > 0)
+				jo.put("extra", ja);
 			jo.put("text", "");
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		return jo.toString();
+	}
+	
+	public List<String> toJSONList(){
+		List<String> list = new ArrayList<String>();
+		try{
+			for(JSONArray ja : all){
+				JSONObject jo = new JSONObject();
+				if(ja.length() > 0)
+					jo.put("extra", ja);
+				jo.put("text", "");
+				list.add(jo.toString());
+			}
+			JSONObject jo = new JSONObject();
+			if(ja.length() > 0)
+				jo.put("extra", ja);
+			jo.put("text", "");
+			list.add(jo.toString());
+			return list;
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public Object toSerialized(){
@@ -71,73 +131,74 @@ public class JSONFormatter {
 		}
 		return null;
 	}
-
+	
+	public List<Object> toSerializedList(){
+		List<Object> list = new ArrayList<Object>();
+		try{
+			for(String s : toJSONList()){
+				list.add(a.invoke(null, s));
+			}
+			return list;
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	public JSONFormatter send(Player player){
 		JSONFormatter.send(player, this);
 		return this;
 	}
 	
 	private void add(Object jo){
-		if(jo!=null){
+		if(ja == null)
+			ja = new JSONArray();
+		if(jo != null)
 			ja.put(jo);
-		}
 	}
 	
-	public JSONFormatter appendNoConvert(String s){
+	private JSONFormatter append(String text, BuilderMaker bm){
 		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			builder.append(c);
-		}
-		add(builder.toString(color));
-		return this;
-	}
-
-	public JSONFormatter append(String s){
-		s = ChatColor.translateAlternateColorCodes('&', s);
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
+		for(int i = 0; i < text.length(); i++){
+			char c = text.charAt(i);
 			switch(c){
 			case '§':{
-				ChatColor cc = ChatColor.getByChar(s.charAt(i+1)); 
-				if(cc==null){
+				if((i + 1) == text.length()){
+					builder.append(c);
+					continue;
+				}
+				ChatColor cc = ChatColor.getByChar(text.charAt(i + 1));
+				if(cc == null){
 					builder.append(c);
 					break;
 				}
+				add(bm.make());
 				switch(cc){
 				case BOLD:
-					add(builder.toString(color));
 					builder = new Builder(builder);
 					builder.bold = true;
 					break;
 				case ITALIC:
-					add(builder.toString(color));
 					builder = new Builder(builder);
 					builder.italic = true;
 					break;
 				case MAGIC:
-					add(builder.toString(color));
 					builder = new Builder(builder);
 					builder.magic = true;
 					break;
 				case RESET:
-					add(builder.toString(color));
 					builder = new Builder();
 					color = "";
 					break;
 				case STRIKETHROUGH:
-					add(builder.toString(color));
 					builder = new Builder(builder);
 					builder.strikethrough = true;
 					break;
 				case UNDERLINE:
-					add(builder.toString(color));
 					builder = new Builder(builder);
 					builder.underline = true;
 					break;
 				default:{
-					add(builder.toString(color));
 					builder = new Builder();
 					color = cc.name().toLowerCase();
 					break;
@@ -151,489 +212,132 @@ public class JSONFormatter {
 			}
 			}
 		}
-		add(builder.toString(color));
+		add(bm.make());
 		return this;
 	}
 	
-	public JSONFormatter appendHoverNoConvert(String s, String hover){
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			builder.append(c);
-		}
-		add(builder.toStringHover(color, hover));
-		return this;
-	}
-
-	public JSONFormatter appendHover(String s, String hover){
-		s = ChatColor.translateAlternateColorCodes('&', s);
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			switch(c){
-			case '§':{
-				ChatColor cc = ChatColor.getByChar(s.charAt(i+1)); 
-				if(cc==null){
-					builder.append(c);
-					break;
-				}
-				switch(cc){
-				case BOLD:
-					add(builder.toStringHover(color, hover));
-					builder = new Builder(builder);
-					builder.bold = true;
-					break;
-				case ITALIC:
-					add(builder.toStringHover(color, hover));
-					builder = new Builder(builder);
-					builder.italic = true;
-					break;
-				case MAGIC:
-					add(builder.toStringHover(color, hover));
-					builder = new Builder(builder);
-					builder.magic = true;
-					break;
-				case RESET:
-					add(builder.toStringHover(color, hover));
-					builder = new Builder();
-					color = "";
-					break;
-				case STRIKETHROUGH:
-					add(builder.toStringHover(color, hover));
-					builder = new Builder(builder);
-					builder.strikethrough = true;
-					break;
-				case UNDERLINE:
-					add(builder.toStringHover(color, hover));
-					builder = new Builder(builder);
-					builder.underline = true;
-					break;
-				default:{
-					add(builder.toStringHover(color, hover));
-					builder = new Builder();
-					color = cc.name().toLowerCase();
-					break;
-				}
-				}
-				i++;
-				break;
+	public JSONFormatter append(String text){
+		return append(text, new BuilderMaker(){
+			@Override
+			public JSONObject make(){
+				return builder.toString(color);
 			}
-			default:{
-				builder.append(c);
-			}
-			}
-		}
-		add(builder.toStringHover(color, hover));
-		return this;
+		});
 	}
 	
-	public JSONFormatter appendCommandNoConvert(String s, String cmd){
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			builder.append(c);
-		}
-		add(builder.toStringCommand(color, cmd));
-		return this;
-	}
-
-	public JSONFormatter appendCommand(String s, String cmd){
-		s = ChatColor.translateAlternateColorCodes('&', s);
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			switch(c){
-			case '§':{
-				ChatColor cc = ChatColor.getByChar(s.charAt(i+1)); 
-				if(cc==null){
-					builder.append(c);
-					break;
-				}
-				switch(cc){
-				case BOLD:
-					add(builder.toStringCommand(color, cmd));
-					builder = new Builder(builder);
-					builder.bold = true;
-					break;
-				case ITALIC:
-					add(builder.toStringCommand(color, cmd));
-					builder = new Builder(builder);
-					builder.italic = true;
-					break;
-				case MAGIC:
-					add(builder.toStringCommand(color, cmd));
-					builder = new Builder(builder);
-					builder.magic = true;
-					break;
-				case RESET:
-					add(builder.toStringCommand(color, cmd));
-					builder = new Builder();
-					color = "";
-					break;
-				case STRIKETHROUGH:
-					add(builder.toStringCommand(color, cmd));
-					builder = new Builder(builder);
-					builder.strikethrough = true;
-					break;
-				case UNDERLINE:
-					add(builder.toStringCommand(color, cmd));
-					builder = new Builder(builder);
-					builder.underline = true;
-					break;
-				default:{
-					add(builder.toStringCommand(color, cmd));
-					builder = new Builder();
-					color = cc.name().toLowerCase();
-					break;
-				}
-				}
-				i++;
-				break;
+	public JSONFormatter appendHover(String text, final HoverEvent hevent){
+		return append(text, new BuilderMaker(){
+			@Override
+			public JSONObject make(){
+				return builder.toStringHover(color, hevent);
 			}
-			default:{
-				builder.append(c);
-			}
-			}
-		}
-		add(builder.toStringCommand(color, cmd));
-		return this;
+		});
 	}
 	
-	public JSONFormatter appendHoverCommandNoConvert(String s, String hover, String command){
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			builder.append(c);
-		}
-		add(builder.toStringHoverCommand(color, hover, command));
-		return this;
-	}
-
-	public JSONFormatter appendHoverCommand(String s, String hover, String cmd){
-		s = ChatColor.translateAlternateColorCodes('&', s);
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			switch(c){
-			case '§':{
-				ChatColor cc = ChatColor.getByChar(s.charAt(i+1)); 
-				if(cc==null){
-					builder.append(c);
-					break;
-				}
-				switch(cc){
-				case BOLD:
-					add(builder.toStringHoverCommand(color, hover, cmd));
-					builder = new Builder(builder);
-					builder.bold = true;
-					break;
-				case ITALIC:
-					add(builder.toStringHoverCommand(color, hover, cmd));
-					builder = new Builder(builder);
-					builder.italic = true;
-					break;
-				case MAGIC:
-					add(builder.toStringHoverCommand(color, hover, cmd));
-					builder = new Builder(builder);
-					builder.magic = true;
-					break;
-				case RESET:
-					add(builder.toStringHoverCommand(color, hover, cmd));
-					builder = new Builder();
-					color = "";
-					break;
-				case STRIKETHROUGH:
-					add(builder.toStringHoverCommand(color, hover, cmd));
-					builder = new Builder(builder);
-					builder.strikethrough = true;
-					break;
-				case UNDERLINE:
-					add(builder.toStringHoverCommand(color, hover, cmd));
-					builder = new Builder(builder);
-					builder.underline = true;
-					break;
-				default:{
-					add(builder.toStringHoverCommand(color, hover, cmd));
-					builder = new Builder();
-					color = cc.name().toLowerCase();
-					break;
-				}
-				}
-				i++;
-				break;
+	public JSONFormatter appendClick(String text, final ClickEvent cevent){
+		return append(text, new BuilderMaker(){
+			@Override
+			public JSONObject make(){
+				return builder.toStringClick(color, cevent);
 			}
-			default:{
-				builder.append(c);
-			}
-			}
-		}
-		add(builder.toStringHoverCommand(color, hover, cmd));
-		return this;
+		});
 	}
 	
-	public JSONFormatter appendSuggestNoConvert(String s, String suggest){
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			builder.append(c);
-		}
-		add(builder.toStringSuggest(color, suggest));
-		return this;
-	}
-
-	public JSONFormatter appendSuggest(String s, String suggest){
-		s = ChatColor.translateAlternateColorCodes('&', s);
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			switch(c){
-			case '§':{
-				ChatColor cc = ChatColor.getByChar(s.charAt(i+1)); 
-				if(cc==null){
-					builder.append(c);
-					break;
-				}
-				switch(cc){
-				case BOLD:
-					add(builder.toStringSuggest(color, suggest));
-					builder = new Builder(builder);
-					builder.bold = true;
-					break;
-				case ITALIC:
-					add(builder.toStringSuggest(color, suggest));
-					builder = new Builder(builder);
-					builder.italic = true;
-					break;
-				case MAGIC:
-					add(builder.toStringSuggest(color, suggest));
-					builder = new Builder(builder);
-					builder.magic = true;
-					break;
-				case RESET:
-					add(builder.toStringSuggest(color, suggest));
-					builder = new Builder();
-					color = "";
-					break;
-				case STRIKETHROUGH:
-					add(builder.toStringSuggest(color, suggest));
-					builder = new Builder(builder);
-					builder.strikethrough = true;
-					break;
-				case UNDERLINE:
-					add(builder.toStringSuggest(color, suggest));
-					builder = new Builder(builder);
-					builder.underline = true;
-					break;
-				default:{
-					add(builder.toStringSuggest(color, suggest));
-					builder = new Builder();
-					color = cc.name().toLowerCase();
-					break;
-				}
-				}
-				i++;
-				break;
+	public JSONFormatter appendHoverClick(String text, final HoverEvent hevent, final ClickEvent cevent){
+		return append(text, new BuilderMaker(){
+			@Override
+			public JSONObject make(){
+				return builder.toStringHoverClick(color, hevent, cevent);
 			}
-			default:{
-				builder.append(c);
-			}
-			}
-		}
-		add(builder.toStringSuggest(color, suggest));
-		return this;
+		});
 	}
 	
-	public JSONFormatter appendHoverSuggestNoConvert(String s, String hover, String suggest){
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			builder.append(c);
+	public Object getPacket(){
+		try{
+			return ppocc.newInstance(toSerialized());
+		}catch(Exception e){
 		}
-		add(builder.toStringHoverSuggest(color, hover, suggest));
-		return this;
-	}
-
-	public JSONFormatter appendHoverSuggest(String s, String hover, String suggest){
-		s = ChatColor.translateAlternateColorCodes('&', s);
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			switch(c){
-			case '§':{
-				ChatColor cc = ChatColor.getByChar(s.charAt(i+1)); 
-				if(cc==null){
-					builder.append(c);
-					break;
-				}
-				switch(cc){
-				case BOLD:
-					add(builder.toStringHoverSuggest(color, hover, suggest));
-					builder = new Builder(builder);
-					builder.bold = true;
-					break;
-				case ITALIC:
-					add(builder.toStringHoverSuggest(color, hover, suggest));
-					builder = new Builder(builder);
-					builder.italic = true;
-					break;
-				case MAGIC:
-					add(builder.toStringHoverSuggest(color, hover, suggest));
-					builder = new Builder(builder);
-					builder.magic = true;
-					break;
-				case RESET:
-					add(builder.toStringHoverSuggest(color, hover, suggest));
-					builder = new Builder();
-					color = "";
-					break;
-				case STRIKETHROUGH:
-					add(builder.toStringHoverSuggest(color, hover, suggest));
-					builder = new Builder( builder);
-					builder.strikethrough = true;
-					break;
-				case UNDERLINE:
-					add(builder.toStringHoverSuggest(color, hover, suggest));
-					builder = new Builder(builder);
-					builder.underline = true;
-					break;
-				default:{
-					add(builder.toStringHoverSuggest(color, hover, suggest));
-					builder = new Builder();
-					color = cc.name().toLowerCase();
-					break;
-				}
-				}
-				i++;
-				break;
-			}
-			default:{
-				builder.append(c);
-			}
-			}
-		}
-		add(builder.toStringHoverSuggest(color, hover, suggest));
-		return this;
+		return null;
 	}
 	
-	public JSONFormatter appendShowHover(String s, ItemStack is){
-		builder = new Builder(builder);
-		for(int i = 0; i < s.length(); i++){
-			char c = s.charAt(i);
-			switch(c){
-			case '§':{
-				ChatColor cc = ChatColor.getByChar(s.charAt(i+1)); 
-				if(cc==null){
-					builder.append(c);
-					break;
-				}
-				switch(cc){
-				case BOLD:
-					add(builder.toStringShowItem(color, is));
-					builder = new Builder(builder);
-					builder.bold = true;
-					break;
-				case ITALIC:
-					add(builder.toStringShowItem(color, is));
-					builder = new Builder(builder);
-					builder.italic = true;
-					break;
-				case MAGIC:
-					add(builder.toStringShowItem(color, is));
-					builder = new Builder(builder);
-					builder.magic = true;
-					break;
-				case RESET:
-					add(builder.toStringShowItem(color, is));
-					builder = new Builder();
-					color = "";
-					break;
-				case STRIKETHROUGH:
-					add(builder.toStringShowItem(color, is));
-					builder = new Builder( builder);
-					builder.strikethrough = true;
-					break;
-				case UNDERLINE:
-					add(builder.toStringShowItem(color, is));
-					builder = new Builder(builder);
-					builder.underline = true;
-					break;
-				default:{
-					add(builder.toStringShowItem(color, is));
-					builder = new Builder();
-					color = cc.name().toLowerCase();
-					break;
-				}
-				}
-				i++;
-				break;
+	public List<Object> getPacketList(){
+		List<Object> list = new ArrayList<Object>();
+		try{
+			for(Object o : toSerializedList()){
+				list.add(ppocc.newInstance(o));
 			}
-			default:{
-				builder.append(c);
-			}
-			}
+			return list;
+		}catch(Exception e){
 		}
-		add(builder.toStringShowItem(color, is));
-		return this;
+		return null;
 	}
 	
-	public JSONFormatter appendItemHoverNoConvert(String s, ItemStack is){
-		builder = new Builder(builder);
-		return this;
+	private static Class<?>			cs		= NMSUtils.getNMSClassSilent("ChatSerializer", "IChatBaseComponent"), icbc = NMSUtils.getNMSClassSilent("IChatBaseComponent"), ppoc = NMSUtils.getNMSClassSilent("PacketPlayOutChat"), pc = NMSUtils.getNMSClassSilent("PlayerConnection"),
+	p = NMSUtils.getNMSClassSilent("Packet"), ep = NMSUtils.getNMSClassSilent("EntityPlayer");
+	private static Method			a		= NMSUtils.getMethodSilent(cs, "a", String.class), sp = NMSUtils.getMethodSilent(pc, "sendPacket", p);
+	private static Field			ppc		= NMSUtils.getFieldSilent(ep, "playerConnection");
+	private static Constructor<?>	ppocc	= NMSUtils.getConstructorSilent(ppoc, icbc);
+	private static boolean			b		= check(cs, icbc, ppoc, pc, p, ep, a, sp, ppc, ppocc);
+	
+	private static boolean check(Object... o){
+		for(Object a : o){
+			if(a == null)
+				return false;
+		}
+		return true;
 	}
-
-	private static Class<?> cs = NMSUtils.getNMSClassSilent("ChatSerializer", "IChatBaseComponent"), icbc = NMSUtils.getNMSClassSilent("IChatBaseComponent"), ppoc = NMSUtils.getNMSClassSilent("PacketPlayOutChat"),
-			pc = NMSUtils.getNMSClassSilent("PlayerConnection"), p = NMSUtils.getNMSClassSilent("Packet"), ep = NMSUtils.getNMSClassSilent("EntityPlayer");
-	private static Method a = NMSUtils.getMethodSilent(cs, "a", String.class), sp = NMSUtils.getMethodSilent(pc, "sendPacket", p);
-	private static Field ppc = NMSUtils.getFieldSilent(ep, "playerConnection");
-	private static Constructor<?> ppocc1 = NMSUtils.getConstructorSilent(ppoc, icbc), ppocc2 = NMSUtils.getConstructorSilent(ppoc);
-	private static boolean b = cs!=null&&icbc!=null&&ppoc!=null&&pc!=null&&p!=null&&ep!=null&&a!=null&&sp!=null&&ppc!=null&&ppocc1!=null&&ppocc2!=null;
-
-	private static void send(Player player, JSONFormatter jm){
-		if(b){
+	
+	private static void send(Player player, JSONFormatter jf){
+		if(!jf.newline){
+			send1(player, jf);
+		}else if(b){
 			try{
-				Object icbco = a.invoke(null, jm.toJSON());
-				Object ppoco = ppocc1.newInstance(icbco);
 				Object entityplayer = NMSUtils.getHandle(player);
 				Object ppco = ppc.get(entityplayer);
-				sp.invoke(ppco, ppoco);
+				sp.invoke(ppco, jf.getPacket());
 			}catch(Exception e){
-				Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + jm.toJSON());
+				Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + jf.toJSON());
 			}
 		}else{
-			Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + jm.toJSON());
+			Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + jf.toJSON());
 		}
 	}
-
-	public static void send(Player player, List<JSONFormatter> jfl){
+	
+	private static void send1(Player player, JSONFormatter jf){
 		if(b){
 			try{
 				Object entityplayer = NMSUtils.getHandle(player);
 				Object ppco = ppc.get(entityplayer);
-				for(JSONFormatter jm : jfl){
+				List<Object> packets = jf.getPacketList();
+				List<String> jsons = null;
+				for(int i = 0; i < packets.size(); i++){
 					try{
-						Object icbco = a.invoke(null, jm.toJSON());
-						Object ppoco = ppocc1.newInstance(icbco);
-						sp.invoke(ppco, ppoco);
+						sp.invoke(ppco, packets.get(i));
 					}catch(Exception e){
-						Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + jm.toJSON());
+						if(jsons == null){
+							jsons = jf.toJSONList();
+						}
+						Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + jsons.get(i));
 					}
 				}
 			}catch(Exception e){
 				e.printStackTrace();
 			}
 		}else{
-			for(JSONFormatter jm : jfl)Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + jm.toJSON());
+			for(String json : jf.toJSONList()){
+				Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + json);
+			}
 		}
 	}
-
+	
 	private class Builder{
-
-		private StringBuilder sb = new StringBuilder("");
-		private boolean bold = false, italic = false, magic = false, strikethrough = false, underline = false, changed = false;
-
+		
+		private StringBuilder	sb		= new StringBuilder("");
+		private boolean			bold	= false, italic = false, magic = false, strikethrough = false, underline = false, changed = false;
+		
 		public Builder(){
 		}
-
+		
 		public Builder(Builder b){
 			bold = b.bold;
 			italic = b.italic;
@@ -641,147 +345,33 @@ public class JSONFormatter {
 			strikethrough = b.strikethrough;
 			underline = b.underline;
 		}
-
+		
 		public void append(char c){
 			sb.append(c);
 			changed = true;
 		}
-
-		public JSONObject toStringHoverCommand(String color, String hover, String cmd){
+		
+		private JSONObject toString(String color, BuilderHelper bh){
 			String string = sb.toString();
-			if(!changed)return null;
-			if(string.length()==0)return null;
+			if(!changed)
+				return null;
+			if(string.length() == 0)
+				return null;
 			JSONObject jo = new JSONObject();
 			try{
-				if(!color.equals(""))jo.put("color", color);
-				if(bold)jo.put("bold", true);
-				if(italic)jo.put("italic", true);
-				if(magic)jo.put("obfuscated", true);
-				if(strikethrough)jo.put("strikethrough", true);
-				if(underline)jo.put("underlined", true);
-				jo.put("text", string);
-				JSONObject jo1 = new JSONObject();
-				jo1.put("action", "show_text");
-				jo1.put("value", hover);
-				jo.put("hoverEvent", jo1);
-				JSONObject jo2 = new JSONObject();
-				jo2.put("action", "run_command");
-				jo2.put("value", "/" + cmd);
-				jo.put("clickEvent", jo2);
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-			return jo;
-		}
-
-		public JSONObject toStringCommand(String color, String cmd){
-			String string = sb.toString();
-			if(!changed)return null;
-			if(string.length()==0)return null;
-			JSONObject jo = new JSONObject();
-			try{
-				if(!color.equals(""))jo.put("color", color);
-				if(bold)jo.put("bold", true);
-				if(italic)jo.put("italic", true);
-				if(magic)jo.put("obfuscated", true);
-				if(strikethrough)jo.put("strikethrough", true);
-				if(underline)jo.put("underlined", true);
-				jo.put("text", string);
-				JSONObject jo1 = new JSONObject();
-				jo1.put("action", "run_command");
-				jo1.put("value", "/" + cmd);
-				jo.put("clickEvent", jo1);
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-			return jo;
-		}
-
-		public JSONObject toStringHover(String color, String hover){
-			String string = sb.toString();
-			if(!changed)return null;
-			if(string.length()==0)return null;
-			JSONObject jo = new JSONObject();
-			try{
-				if(!color.equals(""))jo.put("color", color);
-				if(bold)jo.put("bold", true);
-				if(italic)jo.put("italic", true);
-				if(magic)jo.put("obfuscated", true);
-				if(strikethrough)jo.put("strikethrough", true);
-				if(underline)jo.put("underlined", true);
-				jo.put("text", string);
-				JSONObject jo1 = new JSONObject();
-				jo1.put("action", "show_text");
-				jo1.put("value", hover);
-				jo.put("hoverEvent", jo1);
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-			return jo;
-		}
-
-		public JSONObject toStringHoverSuggest(String color, String hover, String suggest){
-			String string = sb.toString();
-			if(!changed)return null;
-			if(string.length()==0)return null;
-			JSONObject jo = new JSONObject();
-			try{
-				if(!color.equals(""))jo.put("color", color);
-				if(bold)jo.put("bold", true);
-				if(italic)jo.put("italic", true);
-				if(magic)jo.put("obfuscated", true);
-				if(strikethrough)jo.put("strikethrough", true);
-				if(underline)jo.put("underlined", true);
-				jo.put("text", string);
-				JSONObject jo1 = new JSONObject();
-				jo1.put("action", "show_text");
-				jo1.put("value", hover);
-				jo.put("hoverEvent", jo1);
-				JSONObject jo2 = new JSONObject();
-				jo2.put("action", "suggest_command");
-				jo2.put("value", "/" + suggest);
-				jo.put("clickEvent", jo2);
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-			return jo;
-		}
-
-		public JSONObject toStringSuggest(String color, String suggest){
-			String string = sb.toString();
-			if(!changed)return null;
-			if(string.length()==0)return null;
-			JSONObject jo = new JSONObject();
-			try{
-				if(!color.equals(""))jo.put("color", color);
-				if(bold)jo.put("bold", true);
-				if(italic)jo.put("italic", true);
-				if(magic)jo.put("obfuscated", true);
-				if(strikethrough)jo.put("strikethrough", true);
-				if(underline)jo.put("underlined", true);
-				jo.put("text", string);
-				JSONObject jo1 = new JSONObject();
-				jo1.put("action", "suggest_command");
-				jo1.put("value", "/" + suggest);
-				jo.put("clickEvent", jo1);
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-			return jo;
-		}
-
-		public JSONObject toString(String color){
-			String string = sb.toString();
-			if(!changed)return null;
-			if(string.length()==0)return null;
-			JSONObject jo = new JSONObject();
-			try{
-				if(!color.equals(""))jo.put("color", color);
-				if(bold)jo.put("bold", true);
-				if(italic)jo.put("italic", true);
-				if(magic)jo.put("obfuscated", true);
-				if(strikethrough)jo.put("strikethrough", true);
-				if(underline)jo.put("underlined", true);
+				if(!color.equals(""))
+					jo.put("color", color);
+				if(bold)
+					jo.put("bold", true);
+				if(italic)
+					jo.put("italic", true);
+				if(magic)
+					jo.put("obfuscated", true);
+				if(strikethrough)
+					jo.put("strikethrough", true);
+				if(underline)
+					jo.put("underlined", true);
+				bh.add(jo);
 				jo.put("text", string);
 			}catch(Exception e){
 				e.printStackTrace();
@@ -789,72 +379,53 @@ public class JSONFormatter {
 			return jo;
 		}
 		
-		@SuppressWarnings("deprecation")
-		public JSONObject toStringShowItem(String color, ItemStack is){
-			String string = sb.toString();
-			if(!changed)return null;
-			if(string.length()==0)return null;
-			JSONObject jo = new JSONObject();
-			try{
-				if(!color.equals(""))jo.put("color", color);
-				if(bold)jo.put("bold", true);
-				if(italic)jo.put("italic", true);
-				if(magic)jo.put("obfuscated", true);
-				if(strikethrough)jo.put("strikethrough", true);
-				if(underline)jo.put("underlined", true);
-				jo.put("text", string);
-				JSONObject jo1 = new JSONObject();
-				jo1.put("action", "show_item");
-				String display = ItemUtils.getName(is);
-				String raw = ItemUtils.getRawName(is);
-				ItemMeta im = is.getItemMeta();
-				List<String> lore = im.hasLore() ? im.getLore() : new ArrayList<String>();
-				Map<Enchantment, Integer> enchants = is.getItemMeta().getEnchants();
-				boolean utag = !display.equals(raw)||lore.size()>0||enchants.size()>0;
-				String tag = "";
-				if(utag){
-					tag = ",tag:{";
-					if(!display.equals(raw)){
-						tag = tag + "display:{Name:" + display;
-						if(lore.size()>0){
-							tag = tag + ",Lore:[";
-							for(String s : lore){
-								tag = tag + "\"" + s + "\",";
-							}
-							tag = tag.substring(0, tag.length()-1);
-							tag = tag + "]";
-						}
-						tag = tag + "}";
-					}else{
-						if(lore.size()>0){
-							tag = tag + "display:{Lore:[";
-							for(String s : lore){
-								tag = tag + "\"" + s + "\",";
-							}
-							tag = tag.substring(0, tag.length()-1);
-							tag = tag + "]}";
-						}
-					}
-					if(enchants.size()>0){
-						if(tag.length()>6){
-							tag = tag + ",";	
-						}
-						tag = tag + "ench:[";
-						for(Entry<Enchantment, Integer> e : enchants.entrySet()){
-							tag = tag + "{id:" + e.getKey().getId() + ",lvl:" + e.getValue() + "},";
-						}
-						tag = tag.substring(0, tag.length()-1);
-						tag = tag + "]";
-					}
-					tag = tag + "}";
+		public JSONObject toString(String color){
+			return toString(color, new BuilderHelper(){
+				@Override
+				public void add(JSONObject jo) throws Exception{
 				}
-				String name = ItemUtils.getMinecraftName(is);
-				jo1.put("value", "{id:" + name + ",Count:" + is.getAmount() + tag + "}");
-				jo.put("hoverEvent", jo1);
-			}catch(Exception e){
-				e.printStackTrace();
-			}
-			return jo;
+			});
 		}
+		
+		public JSONObject toStringHover(String color, final HoverEvent event){
+			return toString(color, new BuilderHelper(){
+				@Override
+				public void add(JSONObject jo) throws Exception{
+					if(event.getEvent().length() > 1)
+						jo.put("hoverEvent", event.getEvent());
+				}
+			});
+		}
+		
+		public JSONObject toStringClick(String color, final ClickEvent event){
+			return toString(color, new BuilderHelper(){
+				@Override
+				public void add(JSONObject jo) throws Exception{
+					if(event.getEvent().length() > 1)
+						jo.put("clickEvent", event.getEvent());
+				}
+			});
+		}
+		
+		public JSONObject toStringHoverClick(String color, final HoverEvent hevent, final ClickEvent cevent){
+			return toString(color, new BuilderHelper(){
+				@Override
+				public void add(JSONObject jo) throws Exception{
+					if(hevent.getEvent().length() > 1)
+						jo.put("hoverEvent", hevent.getEvent());
+					if(cevent.getEvent().length() > 1)
+						jo.put("clickEvent", cevent.getEvent());
+				}
+			});
+		}
+		
+	}
+	
+	private abstract class BuilderMaker{
+		public abstract JSONObject make();
+	}
+	
+	private abstract class BuilderHelper{
+		public abstract void add(JSONObject jo) throws Exception;
 	}
 }

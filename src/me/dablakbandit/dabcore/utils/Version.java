@@ -2,10 +2,10 @@ package me.dablakbandit.dabcore.utils;
 
 import org.bukkit.Material;
 
-public class Version {
-
+public class Version{
+	
 	public static boolean isAtleastEight(){
-		return ItemUtils.hasBanner();
+		return ItemUtils.getInstance().hasBanner();
 	}
 	
 	private static boolean nine = isNine();
@@ -15,7 +15,8 @@ public class Version {
 		try{
 			Material m = Material.ELYTRA;
 			return true;
-		}catch(Throwable e){}
+		}catch(Throwable e){
+		}
 		return false;
 	}
 	

@@ -1,47 +1,39 @@
 package me.dablakbandit.dabcore.nbt;
 
+import java.util.Objects;
+
 public final class StringTag extends Tag{
-
 	private final String value;
-
-	public StringTag(final String name, final String value){
+	
+	public StringTag(String name, String value){
 		super(name);
 		this.value = value;
 	}
-
+	
 	@Override
 	public String getValue(){
 		return value;
 	}
-
+	
 	@Override
-	public String toString(){
-		final String name = getName();
-		String append = "";
-		if((name != null) && !name.equals("")){
-			append = "(\"" + getName() + "\")";
-		}
-		return "TAG_String" + append + ": " + value;
+	public boolean equals(Object obj){
+		if(this == obj)
+			return true;
+		if(!(obj instanceof StringTag))
+			return false;
+		if(!super.equals(obj))
+			return false;
+		StringTag stringTag = (StringTag)obj;
+		return Objects.equals(value, stringTag.value);
 	}
-
+	
 	@Override
 	public int hashCode(){
-		final int prime = 31;
-		int result = super.hashCode();
-		result = (prime * result) + ((value == null) ? 0 : value.hashCode());
-		return result;
+		return Objects.hash(super.hashCode(), value);
 	}
-
+	
 	@Override
-	public boolean equals(final Object obj){
-		if(this == obj){ return true; }
-		if(!super.equals(obj)){ return false; }
-		if(!(obj instanceof StringTag)){ return false; }
-		final StringTag other = (StringTag) obj;
-		if(value == null){
-			if(other.value != null){ return false; }
-		} else if(!value.equals(other.value)){ return false; }
-		return true;
+	public String toString(){
+		return getTagPrefixedToString("\"", value, "\"");
 	}
-
 }
