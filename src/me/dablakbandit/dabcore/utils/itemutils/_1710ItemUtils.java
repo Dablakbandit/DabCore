@@ -283,7 +283,7 @@ public class _1710ItemUtils implements IItemUtils{
 	public Class<?>			am		= NMSUtils.getClass("net.minecraft.entity.ai.attributes.AttributeModifier"), ga = NMSUtils.getClass("net.minecraft.entity.SharedMonsterAttributes");
 	public Method			a		= NMSUtils.getMethodSilent(ga, "func_111259_a", nbttc), ama = NMSUtils.getMethodSilent(am, "func_111167_a");
 	
-	public Method			gti		= NMSUtils.getMethodSilent(nbtb, "getTypeId");
+	public Method			gti		= NMSUtils.getMethodSilent(nbtb, "func_74732_a");
 	
 	public Class<?>			nbtby	= NMSUtils.getClass("net.minecraft.nbt.NBTTagByte");
 	public Class<?>			nbtba	= NMSUtils.getClass("net.minecraft.nbt.NBTTagByteArray");

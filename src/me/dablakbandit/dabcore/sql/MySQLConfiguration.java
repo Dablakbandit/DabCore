@@ -2,9 +2,9 @@ package me.dablakbandit.dabcore.sql;
 
 import me.dablakbandit.dabcore.configuration.Configuration;
 
-public class MySQLConfiguration {
-
-	private String user, password, host, port, database;
+public class MySQLConfiguration{
+	
+	private String user, password, host, port, database, extra;
 	
 	public MySQLConfiguration(Configuration file){
 		if(!file.GetConfig().isSet("SQL.user")){
@@ -22,15 +22,19 @@ public class MySQLConfiguration {
 		if(!file.GetConfig().isSet("SQL.database")){
 			file.GetConfig().set("SQL.database", "db");
 		}
+		if(!file.GetConfig().isSet("SQL.extra")){
+			file.GetConfig().set("SQL.extra", "?useUnicode=true&characterEncoding=utf-8");
+		}
 		file.SaveConfig();
 		this.user = file.GetConfig().getString("SQL.user");
 		this.password = file.GetConfig().getString("SQL.password");
 		this.host = file.GetConfig().getString("SQL.host");
 		this.port = file.GetConfig().getString("SQL.port");
 		this.database = file.GetConfig().getString("SQL.database");
+		this.extra = file.GetConfig().getString("SQL.extra");
 	}
 	
 	public MySQL getMySQL(){
-		return new MySQL(this.host, this.port, this.database, this.user, this.password);
+		return new MySQL(this.host, this.port, this.database, this.user, this.password, this.extra);
 	}
 }

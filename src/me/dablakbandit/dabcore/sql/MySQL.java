@@ -12,22 +12,31 @@ public class MySQL extends Database{
 	private final String	password;
 	private final String	port;
 	private final String	hostname;
+	private final String	extra;
 	private Connection		connection;
-
+	
 	public MySQL(String hostname, String port, String database, String username, String password){
+		this(hostname, port, database, username, password, "?useUnicode=true&characterEncoding=utf-8");
+	}
+	
+	public MySQL(String hostname, String port, String database, String username, String password, String extra){
 		this.hostname = hostname;
 		this.port = port;
 		this.database = database;
 		this.user = username;
 		this.password = password;
+		this.extra = extra;
 		this.connection = null;
 	}
-
+	
+	public String getDatabase(){
+		return database;
+	}
+	
 	public Connection openConnection(){
 		try{
 			Class.forName("com.mysql.jdbc.Driver");
-			this.connection = DriverManager.getConnection("jdbc:mysql://" + this.hostname + ":" + this.port + "/"
-					+ this.database + "?useUnicode=true&characterEncoding=utf-8", this.user, this.password);
+			this.connection = DriverManager.getConnection("jdbc:mysql://" + this.hostname + ":" + this.port + "/" + this.database + extra, this.user, this.password);
 		}catch(SQLException e){
 			System.out.print(e.getMessage());
 			closeConnection();
@@ -36,15 +45,15 @@ public class MySQL extends Database{
 		}
 		return this.connection;
 	}
-
+	
 	public boolean checkConnection(){
 		return this.connection != null;
 	}
-
+	
 	public Connection getConnection(){
 		return this.connection;
 	}
-
+	
 	public void closeConnection(){
 		if(this.connection != null){
 			try{
@@ -55,7 +64,7 @@ public class MySQL extends Database{
 			}
 		}
 	}
-
+	
 	public ResultSet querySQL(String query){
 		Connection c = null;
 		if(checkConnection()){
@@ -77,7 +86,7 @@ public class MySQL extends Database{
 		}
 		return ret;
 	}
-
+	
 	public void updateSQL(String update){
 		Connection c = null;
 		if(checkConnection()){

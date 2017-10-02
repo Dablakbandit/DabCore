@@ -30,15 +30,15 @@ public class ItemUtils{
 		try{
 			System.out.print("[DabCore] Attempting to load default ItemUtils");
 			IItemUtils inst = new DefaultItemUtils();
-			System.out.print(!inst.convertItemStackToJSON(is).equals(""));
+			inst.convertItemStackToJSON(is).equals("");
 			System.out.print("[DabCore] Loaded default, enjoy :)");
 			return inst;
 		}catch(Exception e){
 		}
 		try{
 			System.out.print("[DabCore] Attempting to load cauldron 1.7.10 ItemUtils");
-			IItemUtils inst = new _1710ItemUtils();
-			System.out.print(!inst.convertItemStackToJSON(is).equals(""));
+			_1710ItemUtils inst = new _1710ItemUtils();
+			inst.convertItemStackToJSON(is).equals("");
 			System.out.print("[DabCore] Loaded cauldron 1.7.10, enjoy :)");
 			return inst;
 		}catch(Exception e){
@@ -46,7 +46,7 @@ public class ItemUtils{
 		try{
 			System.out.print("[DabCore] Attempting to load cauldron 1.6.4 ItemUtils");
 			IItemUtils inst = new _164ItemUtils();
-			System.out.print(!inst.convertItemStackToJSON(is).equals(""));
+			inst.convertItemStackToJSON(is).equals("");
 			System.out.print("[DabCore] Loaded cauldron 1.6.4, enjoy :)");
 			return inst;
 		}catch(Exception e){

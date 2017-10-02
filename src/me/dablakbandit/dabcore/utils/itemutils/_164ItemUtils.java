@@ -777,7 +777,6 @@ public class _164ItemUtils implements IItemUtils{
 			ret = nbtstc.newInstance("", (String)j.get(1));
 			break;
 		case NBTConstants.TYPE_INT_ARRAY:
-			System.out.print(nbtiac);
 			JSONArray ja = jo.getJSONArray(key);
 			int[] b = new int[ja.length()];
 			for(int a = 0; a < ja.length(); a++){

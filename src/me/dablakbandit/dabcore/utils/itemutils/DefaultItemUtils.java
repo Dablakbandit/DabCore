@@ -38,7 +38,7 @@ public class DefaultItemUtils implements IItemUtils{
 		return banner;
 	}
 	
-	public Class<?>	nmis	= NMSUtils.getNMSClass("ItemStack"), cis = NMSUtils.getOBCClass("inventory.CraftItemStack");
+	public Class<?>	nmis	= NMSUtils.getNMSClassSilent("ItemStack"), cis = NMSUtils.getOBCClass("inventory.CraftItemStack");
 	public Method	nmscopy	= NMSUtils.getMethodSilent(cis, "asNMSCopy", ItemStack.class);
 	
 	public Object getNMSCopy(ItemStack is) throws Exception{
@@ -63,7 +63,7 @@ public class DefaultItemUtils implements IItemUtils{
 		return (ItemStack)abc.invoke(null, nmis);
 	}
 	
-	public Class<?>	ni	= NMSUtils.getNMSClass("Item");
+	public Class<?>	ni	= NMSUtils.getNMSClassSilent("Item");
 	
 	public Method	gn	= NMSUtils.getMethodSilent(nmis, "getName");
 	
@@ -114,12 +114,11 @@ public class DefaultItemUtils implements IItemUtils{
 		try{
 			return NMSUtils.getFieldSilent(ni, "REGISTRY").get(null);
 		}catch(Exception e){
-			e.printStackTrace();
 		}
 		return null;
 	}
 	
-	public Class<?>	nmrs	= NMSUtils.getNMSClass("RegistrySimple");
+	public Class<?>	nmrs	= NMSUtils.getNMSClassSilent("RegistrySimple");
 	public Field	nmrsc	= NMSUtils.getField(nmrs, "c");
 	
 	public String getMinecraftName(ItemStack is){
@@ -137,7 +136,7 @@ public class DefaultItemUtils implements IItemUtils{
 		return null;
 	}
 	
-	public Class<?>	nbttc	= NMSUtils.getNMSClass("NBTTagCompound");
+	public Class<?>	nbttc	= NMSUtils.getNMSClassSilent("NBTTagCompound");
 	public Field	tag		= NMSUtils.getField(nmis, "tag");
 	
 	public Object getTag(Object is) throws Exception{
@@ -160,7 +159,7 @@ public class DefaultItemUtils implements IItemUtils{
 		return nbttcm.get(tag);
 	}
 	
-	public Class<?>	nbtb		= NMSUtils.getNMSClass("NBTBase");
+	public Class<?>	nbtb		= NMSUtils.getNMSClassSilent("NBTBase");
 	public Method	nbttcs		= NMSUtils.getMethodSilent(nbttc, "set", String.class, nbtb);
 	public Method	nbttcss		= NMSUtils.getMethodSilent(nbttc, "setString", String.class, String.class);
 	public Method	nbttcsi		= NMSUtils.getMethodSilent(nbttc, "setInt", String.class, int.class);
@@ -241,7 +240,7 @@ public class DefaultItemUtils implements IItemUtils{
 		return (boolean)hkot.invoke(tag, "AttributeModifiers", 9);
 	}
 	
-	public Class<?>			nbttl	= NMSUtils.getNMSClass("NBTTagList");
+	public Class<?>			nbttl	= NMSUtils.getNMSClassSilent("NBTTagList");
 	public Method			gl		= NMSUtils.getMethodSilent(nbttc, "getList", String.class, int.class);
 	public Method			gb		= NMSUtils.getMethodSilent(nbttc, "getBoolean", String.class);
 	public Method			sb		= NMSUtils.getMethodSilent(nbttc, "setBoolean", String.class, boolean.class);
@@ -286,16 +285,16 @@ public class DefaultItemUtils implements IItemUtils{
 	
 	public Method			gti		= NMSUtils.getMethodSilent(nbtb, "getTypeId");
 	
-	public Class<?>			nbtby	= NMSUtils.getNMSClass("NBTTagByte");
-	public Class<?>			nbtba	= NMSUtils.getNMSClass("NBTTagByteArray");
-	public Class<?>			nbtd	= NMSUtils.getNMSClass("NBTTagDouble");
-	public Class<?>			nbtf	= NMSUtils.getNMSClass("NBTTagFloat");
-	public Class<?>			nbti	= NMSUtils.getNMSClass("NBTTagInt");
-	public Class<?>			nbtia	= NMSUtils.getNMSClass("NBTTagIntArray");
-	public Class<?>			nbtl	= NMSUtils.getNMSClass("NBTTagList");
-	public Class<?>			nbtlo	= NMSUtils.getNMSClass("NBTTagLong");
-	public Class<?>			nbts	= NMSUtils.getNMSClass("NBTTagShort");
-	public Class<?>			nbtst	= NMSUtils.getNMSClass("NBTTagString");
+	public Class<?>			nbtby	= NMSUtils.getNMSClassSilent("NBTTagByte");
+	public Class<?>			nbtba	= NMSUtils.getNMSClassSilent("NBTTagByteArray");
+	public Class<?>			nbtd	= NMSUtils.getNMSClassSilent("NBTTagDouble");
+	public Class<?>			nbtf	= NMSUtils.getNMSClassSilent("NBTTagFloat");
+	public Class<?>			nbti	= NMSUtils.getNMSClassSilent("NBTTagInt");
+	public Class<?>			nbtia	= NMSUtils.getNMSClassSilent("NBTTagIntArray");
+	public Class<?>			nbtl	= NMSUtils.getNMSClassSilent("NBTTagList");
+	public Class<?>			nbtlo	= NMSUtils.getNMSClassSilent("NBTTagLong");
+	public Class<?>			nbts	= NMSUtils.getNMSClassSilent("NBTTagShort");
+	public Class<?>			nbtst	= NMSUtils.getNMSClassSilent("NBTTagString");
 	
 	public Constructor<?>	nbtbc	= NMSUtils.getConstructorSilent(nbtby, byte.class);
 	public Constructor<?>	nbtbac	= NMSUtils.getConstructorSilent(nbtba, byte[].class);
