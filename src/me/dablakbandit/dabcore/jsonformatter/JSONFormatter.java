@@ -276,7 +276,7 @@ public class JSONFormatter{
 	p = NMSUtils.getNMSClassSilent("Packet"), ep = NMSUtils.getNMSClassSilent("EntityPlayer");
 	private static Method			a		= NMSUtils.getMethodSilent(cs, "a", String.class), sp = NMSUtils.getMethodSilent(pc, "sendPacket", p);
 	private static Field			ppc		= NMSUtils.getFieldSilent(ep, "playerConnection");
-	private static Constructor<?>	ppocc	= NMSUtils.getConstructorSilent(ppoc, icbc);
+	private static Constructor<?>	ppocc	= NMSUtils.getConstructorSilent(ppoc, icbc), ppoccb = NMSUtils.getConstructorSilent(ppoc, icbc, byte.class);
 	private static boolean			b		= check(cs, icbc, ppoc, pc, p, ep, a, sp, ppc, ppocc);
 	
 	private static boolean check(Object... o){
@@ -427,5 +427,19 @@ public class JSONFormatter{
 	
 	private abstract class BuilderHelper{
 		public abstract void add(JSONObject jo) throws Exception;
+	}
+	
+	public static void sendRawMessage(Player player, String message, byte b){
+		try{
+			Object entityplayer = NMSUtils.getHandle(player);
+			Object ppco = ppc.get(entityplayer);
+			JSONObject jo = new JSONObject();
+			jo.put("text", message);
+			String send = jo.toString();
+			Object a1 = a.invoke(null, send);
+			sp.invoke(ppco, ppoccb.newInstance(a1, b));
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 }

@@ -1,5 +1,7 @@
 package me.dablakbandit.dabcore.sql;
 
+import org.bukkit.configuration.file.FileConfiguration;
+
 import me.dablakbandit.dabcore.configuration.Configuration;
 
 public class MySQLConfiguration{
@@ -7,31 +9,32 @@ public class MySQLConfiguration{
 	private String user, password, host, port, database, extra;
 	
 	public MySQLConfiguration(Configuration file){
-		if(!file.GetConfig().isSet("SQL.user")){
-			file.GetConfig().set("SQL.user", "user");
+		FileConfiguration conf = file.GetConfig();
+		if(!conf.isSet("SQL.user")){
+			conf.set("SQL.user", "user");
 		}
-		if(!file.GetConfig().isSet("SQL.password")){
-			file.GetConfig().set("SQL.password", "password");
+		if(!conf.isSet("SQL.password")){
+			conf.set("SQL.password", "password");
 		}
-		if(!file.GetConfig().isSet("SQL.host")){
-			file.GetConfig().set("SQL.host", "localhost");
+		if(!conf.isSet("SQL.host")){
+			conf.set("SQL.host", "localhost");
 		}
-		if(!file.GetConfig().isSet("SQL.port")){
-			file.GetConfig().set("SQL.port", "3306");
+		if(!conf.isSet("SQL.port")){
+			conf.set("SQL.port", "3306");
 		}
-		if(!file.GetConfig().isSet("SQL.database")){
-			file.GetConfig().set("SQL.database", "db");
+		if(!conf.isSet("SQL.database")){
+			conf.set("SQL.database", "db");
 		}
-		if(!file.GetConfig().isSet("SQL.extra")){
-			file.GetConfig().set("SQL.extra", "?useUnicode=true&characterEncoding=utf-8");
+		if(!conf.isSet("SQL.extra")){
+			conf.set("SQL.extra", "?useUnicode=true&characterEncoding=utf-8");
 		}
 		file.SaveConfig();
-		this.user = file.GetConfig().getString("SQL.user");
-		this.password = file.GetConfig().getString("SQL.password");
-		this.host = file.GetConfig().getString("SQL.host");
-		this.port = file.GetConfig().getString("SQL.port");
-		this.database = file.GetConfig().getString("SQL.database");
-		this.extra = file.GetConfig().getString("SQL.extra");
+		this.user = conf.getString("SQL.user");
+		this.password = conf.getString("SQL.password");
+		this.host = conf.getString("SQL.host");
+		this.port = conf.getString("SQL.port");
+		this.database = conf.getString("SQL.database");
+		this.extra = conf.getString("SQL.extra");
 	}
 	
 	public MySQL getMySQL(){
