@@ -165,15 +165,15 @@ public class FastBlockAPI{
 	}
 	
 	public static void updateLight(World world, int Blockx1, int Blockz1, int Blockx2, int Blockz2){
-		int cx1 = FastBlockAPI.getGreater(Blockx1, Blockz1) >> 4;
-		int cz1 = FastBlockAPI.getLower(Blockz1, Blockz2) >> 4;
+		int cx1 = FastBlockAPI.getGreater(Blockx1, Blockx2) >> 4;
+		int cz1 = FastBlockAPI.getGreater(Blockz1, Blockz2) >> 4;
 		int cx2 = FastBlockAPI.getLower(Blockx1, Blockx2) >> 4;
-		int cz2 = FastBlockAPI.getGreater(Blockz1, Blockz2) >> 4;
+		int cz2 = FastBlockAPI.getLower(Blockz1, Blockz2) >> 4;
 		
 		try{
 			Object nms_world = world_method_get_handle.invoke(world);
-			for(int i = cx2; i < cx1; i++){
-				for(int j = cz1; j < cz2; j++){
+			for(int i = cx2; i <= cx1; i++){
+				for(int j = cz2; j <= cz1; j++){
 					Object nms_chunk = world_method_get_chunk.invoke(nms_world, i, j);
 					updateLight(nms_chunk);
 				}
@@ -192,13 +192,13 @@ public class FastBlockAPI{
 	}
 	
 	public static void updateChunk(World world, int Blockx1, int Blockz1, int Blockx2, int Blockz2){
-		int cx1 = FastBlockAPI.getGreater(Blockx1, Blockz1) >> 4;
-		int cz1 = FastBlockAPI.getLower(Blockz1, Blockz2) >> 4;
+		int cx1 = FastBlockAPI.getGreater(Blockx1, Blockx2) >> 4;
+		int cz1 = FastBlockAPI.getGreater(Blockz1, Blockz2) >> 4;
 		int cx2 = FastBlockAPI.getLower(Blockx1, Blockx2) >> 4;
-		int cz2 = FastBlockAPI.getGreater(Blockz1, Blockz2) >> 4;
+		int cz2 = FastBlockAPI.getLower(Blockz1, Blockz2) >> 4;
 		try{
 			for(int i = cx2; i <= cx1; i++){
-				for(int j = cz1; j <= cz2; j++){
+				for(int j = cz2; j <= cz1; j++){
 					updateChunk(world, world.getChunkAt(i, j));
 				}
 			}
@@ -222,13 +222,13 @@ public class FastBlockAPI{
 	}
 	
 	public static void updateChunkAndLight(World world, int Blockx1, int Blockz1, int Blockx2, int Blockz2){
-		int cx1 = FastBlockAPI.getGreater(Blockx1, Blockz1) >> 4;
-		int cz1 = FastBlockAPI.getLower(Blockz1, Blockz2) >> 4;
+		int cx1 = FastBlockAPI.getGreater(Blockx1, Blockx2) >> 4;
+		int cz1 = FastBlockAPI.getGreater(Blockz1, Blockz2) >> 4;
 		int cx2 = FastBlockAPI.getLower(Blockx1, Blockx2) >> 4;
-		int cz2 = FastBlockAPI.getGreater(Blockz1, Blockz2) >> 4;
+		int cz2 = FastBlockAPI.getLower(Blockz1, Blockz2) >> 4;
 		try{
 			for(int i = cx2; i <= cx1; i++){
-				for(int j = cz1; j <= cz2; j++){
+				for(int j = cz2; j <= cz1; j++){
 					Chunk chunk = world.getChunkAt(i, j);
 					Object nms_chunk = craft_chunk_method_get_handle.invoke(chunk);
 					updateLight(nms_chunk);
