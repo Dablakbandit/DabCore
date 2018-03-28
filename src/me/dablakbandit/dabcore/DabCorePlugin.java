@@ -1,12 +1,7 @@
 package me.dablakbandit.dabcore;
 
-import java.io.File;
-import java.io.FileInputStream;
-
 import org.bukkit.plugin.java.JavaPlugin;
 
-import me.dablakbandit.dabcore.json.JSONObject;
-import me.dablakbandit.dabcore.json.JSONTokener;
 import me.dablakbandit.dabcore.metrics.Metrics;
 import me.dablakbandit.dabcore.updater.PluginUpdater;
 import me.dablakbandit.dabcore.utils.ItemUtils;
@@ -26,13 +21,6 @@ public class DabCorePlugin extends JavaPlugin{
 		main = this;
 		new Metrics(this);
 		ItemUtils.getInstance();
-		try{
-			File in = new File("./test.pin");
-			FileInputStream fis = new FileInputStream(in);
-			new JSONObject(new JSONTokener(fis));
-		}catch(Exception e){
-			e.printStackTrace();
-		}
 	}
 	
 	@Override

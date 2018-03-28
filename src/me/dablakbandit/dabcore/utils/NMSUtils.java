@@ -282,6 +282,27 @@ public class NMSUtils{
 		return null;
 	}
 	
+	public static Object getFieldValueWithException(Field f, Object args) throws Exception{
+		return f.get(args);
+	}
+	
+	public static Object getFieldValueSilent(Field f, Object args){
+		try{
+			return getFieldValueWithException(f, args);
+		}catch(Exception e){
+		}
+		return null;
+	}
+	
+	public static Object getFieldValue(Field f, Object args){
+		try{
+			return getFieldValueWithException(f, args);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	public static Method getMethodWithException(Class<?> clazz, String name, Class<?>... args) throws Exception{
 		for(Method m : clazz.getDeclaredMethods())
 			if(m.getName().equals(name) && (args.length == 0 && m.getParameterTypes().length == 0 || ClassListEqual(args, m.getParameterTypes()))){
@@ -294,6 +315,15 @@ public class NMSUtils{
 				return m;
 			}
 		throw new Exception("Method Not Found");
+	}
+	
+	public static Method getMethod(Class<?> clazz, String name, Class<?>... args){
+		try{
+			return getMethodWithException(clazz, name, args);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	public static Method getMethodSilent(Class<?> clazz, String name, Class<?>... args){
@@ -337,7 +367,7 @@ public class NMSUtils{
 		return null;
 	}
 	
-	public static Constructor<?> getConstructor(Class<?> clazz, Class<?>... args) throws Exception{
+	public static Constructor<?> getConstructorWithException(Class<?> clazz, Class<?>... args) throws Exception{
 		for(Constructor<?> c : clazz.getDeclaredConstructors())
 			if(args.length == 0 && c.getParameterTypes().length == 0 || ClassListEqual(args, c.getParameterTypes())){
 				c.setAccessible(true);
@@ -351,9 +381,18 @@ public class NMSUtils{
 		throw new Exception("Constructor Not Found");
 	}
 	
+	public static Constructor<?> getConstructor(Class<?> clazz, Class<?>... args){
+		try{
+			return getConstructorWithException(clazz, args);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	public static Constructor<?> getConstructorSilent(Class<?> clazz, Class<?>... args){
 		try{
-			return getConstructor(clazz, args);
+			return getConstructorWithException(clazz, args);
 		}catch(Exception e){
 		}
 		return null;
@@ -362,6 +401,11 @@ public class NMSUtils{
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static Enum<?> getEnum(final String value, final Class enumClass){
 		return Enum.valueOf(enumClass, value);
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static <E extends Enum<E>> E getEnum(int i, final Class enumClass){
+		return (E)enumClass.getEnumConstants()[i];
 	}
 	
 }
