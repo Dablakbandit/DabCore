@@ -216,7 +216,6 @@ public class FastBlockAPI{
 		Object packet = con_packet_play_out_map_chunk.newInstance(nms_chunk, 65535);
 		for(Player p : world.getPlayers()){
 			Object nms_player = player_method_get_handle.invoke(p);
-			System.out.print(player_field_player_connection);
 			Object con = player_field_player_connection.get(nms_player);
 			player_connection_method_send_packet.invoke(con, packet);
 		}
