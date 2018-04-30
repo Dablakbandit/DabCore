@@ -9,121 +9,95 @@ import java.sql.Statement;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class SQLite
-extends Database
-{
+public class SQLite extends Database{
 	
-	private JavaPlugin plugin;
-	private final String database;
-	private Connection connection;
-
+	private JavaPlugin		plugin;
+	private final String	database;
+	private Connection		connection;
+	
 	public SQLite(String database){
 		this(null, database);
 	}
 	
-	public SQLite(JavaPlugin plugin, String database)
-	{
+	public SQLite(JavaPlugin plugin, String database){
 		this.plugin = plugin;
 		this.database = database;
 		this.connection = null;
 	}
-
-	public Connection openConnection()
-	{
-		try
-		{
+	
+	public Connection openConnection(){
+		try{
 			Class.forName("org.sqlite.JDBC");
-			File f = (plugin==null?new File(database) : new File(plugin.getDataFolder(), database));
-			if(!f.getParentFile().exists())f.getParentFile().mkdirs();
-			if(!f.exists())f.createNewFile();
+			File f = (plugin == null ? new File(database) : new File(plugin.getDataFolder(), database));
+			if(!f.getParentFile().exists())
+				f.getParentFile().mkdirs();
+			if(!f.exists())
+				f.createNewFile();
 			this.connection = DriverManager.getConnection("jdbc:sqlite:" + f);
-		}
-		catch (SQLException e)
-		{
+		}catch(SQLException e){
 			System.out.print(e.getMessage());
 			closeConnection();
-		}
-		catch (ClassNotFoundException e)
-		{
+		}catch(ClassNotFoundException e){
 			System.out.print("JDBC Driver not found!");
-		}
-		catch (Exception e)
-		{
+		}catch(Exception e){
 			e.printStackTrace();
 		}
 		return this.connection;
 	}
-
-	public boolean checkConnection()
-	{
+	
+	public boolean checkConnection(){
 		return this.connection != null;
 	}
-
-	public Connection getConnection()
-	{
+	
+	public Connection getConnection(){
 		return this.connection;
 	}
-
-	public void closeConnection()
-	{
-		if (this.connection != null) {
-			try
-			{
+	
+	public void closeConnection(){
+		if(this.connection != null){
+			try{
 				this.connection.close();
-			}
-			catch (SQLException e)
-			{
+			}catch(SQLException e){
 				System.out.print("Error closing the SQLite Connection!");
 				e.printStackTrace();
 			}
 		}
 	}
-
-	public ResultSet querySQL(String query)
-	{
+	
+	public ResultSet querySQL(String query){
 		Connection c = null;
-		if (checkConnection()) {
+		if(checkConnection()){
 			c = getConnection();
-		} else {
+		}else{
 			c = openConnection();
 		}
 		Statement s = null;
-		try
-		{
+		try{
 			s = c.createStatement();
-		}
-		catch (SQLException e1)
-		{
+		}catch(SQLException e1){
 			e1.printStackTrace();
 		}
 		ResultSet ret = null;
-		try
-		{
+		try{
 			ret = s.executeQuery(query);
-		}
-		catch (SQLException e)
-		{
+		}catch(SQLException e){
 			e.printStackTrace();
 		}
 		return ret;
 	}
-
-	public void updateSQL(String update)
-	{
+	
+	public void updateSQL(String update){
 		Connection c = null;
-		if (checkConnection()) {
+		if(checkConnection()){
 			c = getConnection();
-		} else {
+		}else{
 			c = openConnection();
 		}
 		Statement s = null;
-		try
-		{
+		try{
 			s = c.createStatement();
 			s.executeUpdate(update);
-		}
-		catch (SQLException e1)
-		{
+		}catch(SQLException e1){
 			e1.printStackTrace();
 		}
 	}

@@ -1,16 +1,17 @@
 package me.dablakbandit.dabcore.command.advanced;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public abstract class Argument {
-
-	private AdvancedCommand command;
-	private String arg;
+public abstract class Argument{
+	
+	protected AdvancedCommand	command;
+	protected String			arg;
 	
 	public Argument(AdvancedCommand cmd, String arg){
 		this.command = cmd;
@@ -36,5 +37,7 @@ public abstract class Argument {
 	}
 	
 	public abstract boolean onCommandPart(CommandSender s, Command cmd, String label, String[] args);
+	
+	public abstract List<String> getInfo();
 	
 }

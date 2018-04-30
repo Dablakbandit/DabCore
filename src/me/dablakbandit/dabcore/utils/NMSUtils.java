@@ -303,6 +303,68 @@ public class NMSUtils{
 		return null;
 	}
 	
+	public static Method getMethodTypesWithException(Class<?> clazz, Class<?>... args) throws Exception{
+		for(Method m : clazz.getDeclaredMethods())
+			if(args.length == 0 && m.getParameterTypes().length == 0 || ClassListEqual(args, m.getParameterTypes())){
+				m.setAccessible(true);
+				return m;
+			}
+		for(Method m : clazz.getMethods())
+			if(args.length == 0 && m.getParameterTypes().length == 0 || ClassListEqual(args, m.getParameterTypes())){
+				m.setAccessible(true);
+				return m;
+			}
+		throw new Exception("Method Not Found");
+	}
+	
+	public static Method getMethodTypes(Class<?> clazz, Class<?>... args){
+		try{
+			return getMethodTypesWithException(clazz, args);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static Method getMethodTypesSilent(Class<?> clazz, Class<?>... args){
+		try{
+			return getMethodTypesWithException(clazz, args);
+		}catch(Exception e){
+		}
+		return null;
+	}
+	
+	public static Method getMethodReturnWithException(Class<?> clazz, Class<?> arg) throws Exception{
+		for(Method m : clazz.getDeclaredMethods())
+			if(arg == m.getReturnType()){
+				m.setAccessible(true);
+				return m;
+			}
+		for(Method m : clazz.getMethods())
+			if(arg == m.getReturnType()){
+				m.setAccessible(true);
+				return m;
+			}
+		throw new Exception("Method Not Found");
+	}
+	
+	public static Method getMethodReturn(Class<?> clazz, Class<?> arg){
+		try{
+			return getMethodReturnWithException(clazz, arg);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static Method getMethodReturnSilent(Class<?> clazz, Class<?> arg){
+		try{
+			return getMethodReturnWithException(clazz, arg);
+		}catch(Exception e){
+		}
+		return null;
+	}
+	
 	public static Method getMethodWithException(Class<?> clazz, String name, Class<?>... args) throws Exception{
 		for(Method m : clazz.getDeclaredMethods())
 			if(m.getName().equals(name) && (args.length == 0 && m.getParameterTypes().length == 0 || ClassListEqual(args, m.getParameterTypes()))){

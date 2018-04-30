@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 
 import me.dablakbandit.dabcore.utils.NMSUtils;
 
+@SuppressWarnings("deprecation")
 public class FastBlockAPI{
 	
 	private static Class<?>			nms_world_class								= NMSUtils.getNMSClass("World");
@@ -56,6 +57,7 @@ public class FastBlockAPI{
 	private static Method			chunk_section_method_set_type				= NMSUtils.getMethod(nms_chunk_section_class, "setType", int.class, int.class, int.class, nms_iblock_data_class);
 	private static Method			chunk_section_method_get_type				= NMSUtils.getMethod(nms_chunk_section_class, "getType", int.class, int.class, int.class);
 	private static Method			block_method_remove							= NMSUtils.getMethod(nms_block_class, "remove", nms_world_class, nms_block_position_class, nms_iblock_data_class);
+	private static Method			block_method_get_id							= NMSUtils.getMethod(nms_block_class, "getId", nms_block_class);
 	
 	private static Constructor<?>	con_block_position							= NMSUtils.getConstructor(nms_block_position_class, int.class, int.class, int.class);
 	private static Constructor<?>	con_chunk_section							= NMSUtils.getConstructor(nms_chunk_section_class, int.class, boolean.class);
@@ -149,7 +151,6 @@ public class FastBlockAPI{
 		setBlockFast(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ(), blockId, data);
 	}
 	
-	@SuppressWarnings("deprecation")
 	public static void setBlockFast(Location l, Material m, byte data){
 		setBlockFast(l.getWorld(), l.getBlockX(), l.getBlockY(), l.getBlockZ(), m.getId(), data);
 	}
@@ -242,6 +243,63 @@ public class FastBlockAPI{
 	
 	public static void updateChunkAndLight(Location from, Location to){
 		updateChunkAndLight(from.getWorld(), from.getBlockX(), from.getBlockZ(), to.getBlockX(), to.getBlockZ());
+	}
+	
+	public static Integer getIdAt(Location loc){
+		try{
+			Object nms_world = world_method_get_handle.invoke(loc.getWorld());
+			Object nms_chunk = world_method_get_chunk.invoke(nms_world, loc.getBlockX() >> 4, loc.getBlockZ() >> 4);
+			Object nms_bp = con_block_position.newInstance(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+			
+			Object nms_ibd = chunk_method_get_block_data.invoke(nms_chunk, nms_bp);
+			Object nms_block = iblock_method_get_block.invoke(nms_ibd);
+			return (Integer)block_method_get_id.invoke(null, nms_block);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static Integer getIdAt(World world, int x, int y, int z){
+		return getIdAt(new Location(world, x, y, z));
+	}
+	
+	public static Material getMaterialAt(World world, int x, int y, int z){
+		return Material.getMaterial(getIdAt(world, x, y, z));
+	}
+	
+	public static Material getMaterialAt(Location loc){
+		return Material.getMaterial(getIdAt(loc));
+	}
+	
+	public Byte getDataAt(Location loc){
+		try{
+			Object nms_world = world_method_get_handle.invoke(loc.getWorld());
+			Object nms_chunk = world_method_get_chunk.invoke(nms_world, loc.getBlockX() >> 4, loc.getBlockZ() >> 4);
+			Object nms_bp = con_block_position.newInstance(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+			Object nms_ibd = chunk_method_get_block_data.invoke(nms_chunk, nms_bp);
+			Object nms_block = iblock_method_get_block.invoke(nms_ibd);
+			return (byte)block_method_to_legacy_data.invoke(nms_block, nms_ibd);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static FastBlockData getFastDataAt(Location loc){
+		try{
+			Object nms_world = world_method_get_handle.invoke(loc.getWorld());
+			Object nms_chunk = world_method_get_chunk.invoke(nms_world, loc.getBlockX() >> 4, loc.getBlockZ() >> 4);
+			Object nms_bp = con_block_position.newInstance(loc.getBlockX(), loc.getBlockY(), loc.getBlockZ());
+			Object nms_ibd = chunk_method_get_block_data.invoke(nms_chunk, nms_bp);
+			Object nms_block = iblock_method_get_block.invoke(nms_ibd);
+			Material m = Material.getMaterial((int)block_method_get_id.invoke(null, nms_block));
+			byte b = ((Integer)block_method_to_legacy_data.invoke(nms_block, nms_ibd)).byteValue();
+			return new FastBlockData(loc, nms_world, nms_block, nms_ibd, m, b);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 }

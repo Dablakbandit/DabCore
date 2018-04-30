@@ -86,6 +86,7 @@ public class PluginUpdater implements Listener{
 		try{
 			URL checkURL = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + id);
 			URLConnection con = checkURL.openConnection();
+			con.setConnectTimeout(2000);
 			String new_version = new BufferedReader(new InputStreamReader(con.getInputStream())).readLine();
 			if(new_version.contains("[")){
 				new_version = new_version.substring(0, new_version.indexOf('['));
